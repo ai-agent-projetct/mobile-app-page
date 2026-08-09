@@ -1,0 +1,4754 @@
+
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259165770.pdf (17 pages) ===
+========================================
+
+--- Page 1 ---
+ 
+System  components  
+1.  Phone  /  IVR  layer  —  Twilio  Voice  or  Vonage  
+This  is  the  entry  point.  When  a  patient  calls  the  hospital  number,  Twilio  answers  the  call  and  
+streams
+ 
+audio
+ 
+to
+ 
+your
+ 
+backend.
+ 
+Twilio
+ 
+also
+ 
+handles
+ 
+TTS
+ 
+playback
+ 
+(speaking
+ 
+responses
+ 
+back
+ 
+to
+ 
+the
+ 
+patient).
+ 
+You'll
+ 
+conﬁgure
+ 
+a
+ 
+webhook
+ 
+URL
+ 
+that
+ 
+Twilio
+ 
+hits
+ 
+on
+ 
+every
+ 
+incoming
+ 
+call,
+ 
+and
+ 
+your
+ 
+server
+ 
+responds
+ 
+with
+ 
+TwiML
+ 
+(XML
+ 
+instructions)
+ 
+or
+ 
+uses
+ 
+Twilio's
+ 
+Media
+ 
+Streams
+ 
+to
+ 
+pipe
+ 
+raw
+ 
+audio.
+ 
+2.  Speech-to-text  (STT)  
+Convert  patient  speech  to  text  in  real  time.  Best  options:  Deepgram  (lowest  latency,  medical  
+vocabulary
+ 
+support),
+ 
+OpenAI
+ 
+Whisper
+ 
+(high
+ 
+accuracy,
+ 
+good
+ 
+for
+ 
+accented
+ 
+speech),
+ 
+or
+ 
+Google
+ 
+Speech-to-Text
+ 
+(solid
+ 
+HL7-compatible
+ 
+option).
+ 
+Deepgram
+ 
+is
+ 
+the
+ 
+top
+ 
+pick
+ 
+for
+ 
+IVR
+ 
+because
+ 
+it
+ 
+has
+ 
+sub-300ms
+ 
+streaming
+ 
+transcription.
+ 
+3.  AI  orchestrator  (the  "brain")  
+This  is  your  LLM  agent  —  Claude  or  GPT-4o  —  running  with  tool/function  calling  enabled.  Its  
+job
+ 
+is
+ 
+to:
+ 
+●  Understand  the  patient's  intent  and  symptoms  ●  Extract  structured  data  (name,  age,  phone  number,  illness)  ●  Decide  which  specialist  to  route  to  (cardiologist,  ortho,  ENT,  etc.)  ●  Call  your  internal  APIs  to  query  available  slots  ●  Conﬁrm  and  write  the  booking  
+You  deﬁne  a  system  prompt  that  gives  the  agent  a  persona  ("You  are  the  hospital's  
+appointment
+ 
+assistant...")
+ 
+and
+ 
+a
+ 
+set
+ 
+of
+ 
+tools
+ 
+it
+ 
+can
+ 
+call:
+ get_patient_record, ﬁnd_specialists_by_symptom, get_available_slots, book_appointment, send_whatsapp_conﬁrmation. 
+4.  Text-to-speech  (TTS)  
+Convert  the  agent's  text  response  back  to  audio  for  the  patient.  ElevenLabs  gives  the  most  
+natural
+ 
+voice;
+ 
+Amazon
+ 
+Polly
+ 
+is
+ 
+cheaper
+ 
+and
+ 
+still
+ 
+very
+ 
+good.
+ 
+The
+ 
+audio
+ 
+is
+ 
+streamed
+ 
+back
+ 
+through
+ 
+Twilio.
+ 
+--- Page 2 ---
+5.  Slot  scheduling  logic  
+This  is  your  own  backend  service.  It  queries  a  database  of  doctors  and  their  calendars,  returns  
+open
+ 
+slots
+ 
+ﬁltered
+ 
+by:
+ 
+existing
+ 
+bookings,
+ 
+doctor
+ 
+working
+ 
+hours,
+ 
+consultation
+ 
+duration,
+ 
+and
+ 
+specialty.
+ 
+Use
+ 
+PostgreSQL
+ 
+or
+ 
+MongoDB
+ 
+for
+ 
+storage,
+ 
+with
+ 
+Redis
+ 
+for
+ 
+caching
+ 
+slot
+ 
+availability
+ 
+to
+ 
+avoid
+ 
+race
+ 
+conditions
+ 
+when
+ 
+multiple
+ 
+patients
+ 
+book
+ 
+simultaneously.
+ 
+6.  WhatsApp  delivery  —  Twilio  WhatsApp  API  or  360dialog  
+Once  a  booking  is  conﬁrmed,  trigger  a  WhatsApp  message  (using  an  approved  template)  to  
+the
+ 
+patient's
+ 
+number
+ 
+with
+ 
+the
+ 
+doctor's
+ 
+name,
+ 
+specialty,
+ 
+date,
+ 
+time,
+ 
+clinic
+ 
+location,
+ 
+and
+ 
+a
+ 
+cancellation
+ 
+link.
+ 
+Twilio's
+ 
+WhatsApp
+ 
+API
+ 
+is
+ 
+the
+ 
+easiest
+ 
+to
+ 
+integrate
+ 
+if
+ 
+you're
+ 
+already
+ 
+using
+ 
+Twilio
+ 
+for
+ 
+voice.
+ 
+7.  HIS/EMR  integration  (optional  but  recommended)  
+Connect  to  the  hospital's  existing  Health  Information  System  via  HL7  FHIR  APIs  to  pull  real  
+patient
+ 
+records
+ 
+(if
+ 
+they're
+ 
+returning
+ 
+patients),
+ 
+write
+ 
+conﬁrmed
+ 
+appointments
+ 
+back
+ 
+to
+ 
+the
+ 
+clinical
+ 
+system,
+ 
+and
+ 
+check
+ 
+doctor
+ 
+schedules
+ 
+from
+ 
+the
+ 
+source
+ 
+of
+ 
+truth.
+ 
+ 
+Third-party  services  needed  
+Purpose  Recommended  Alternative  
+Phone/IVR  Twilio  Voice  Vonage,  Plivo  
+STT  Deepgram  Whisper  API,  Google  STT  
+LLM  Agent  Claude  claude-sonnet-4-6  or  GPT-4o  
+Gemini  1.5  Pro  
+TTS  ElevenLabs  Amazon  Polly,  Azure  TTS  
+WhatsApp  Twilio  WhatsApp  API  360dialog,  Gupshup  
+Database  PostgreSQL  MongoDB  
+Cache/locks  Redis  DynamoDB  
+Hosting  AWS  /  GCP  /  Azure  Railway,  Render  
+ 
+--- Page 3 ---
+How  to  run  it  as  software  
+Backend  stack:  Node.js  (TypeScript)  —  both  have  excellent  Twilio  and  LLM  SDKs.  
+The  core  server  exposes  these  endpoints:  
+●  POST  /voice/inbound —  Twilio  webhook  when  a  call  arrives;  returns  TwiML  to  open  a  
+media
+ 
+stream
+ ●  WebSocket  /voice/stream —  receives  live  audio  from  Twilio,  pipes  to  STT,  runs  agent,  
+streams
+ 
+TTS
+ 
+back
+ ●  POST  /appointments/slots —  internal  API  to  query  available  slots  ●  POST  /appointments/book —  writes  a  conﬁrmed  booking  ●  POST  /whatsapp/send —  ﬁres  the  WhatsApp  conﬁrmation  message  
+Deployment:  Containerise  with  Docker  and  run  on  a  cloud  VM  (AWS  EC2,  GCP  Compute  
+Engine)
+ 
+or
+ 
+a
+ 
+managed
+ 
+container
+ 
+service
+ 
+(AWS
+ 
+ECS,
+ 
+Cloud
+ 
+Run).
+ 
+The
+ 
+WebSocket
+ 
+server
+ 
+needs
+ 
+a
+ 
+stable,
+ 
+low-latency
+ 
+connection
+ 
+—
+ 
+avoid
+ 
+serverless
+ 
+for
+ 
+the
+ 
+streaming
+ 
+audio
+ 
+path.
+ 
+Concurrency:  Use  a  job  queue  (BullMQ  or  Celery)  for  WhatsApp  delivery  and  any  async  
+operations.
+ 
+For
+ 
+slot
+ 
+locking,
+ 
+use
+ 
+Redis
+ SETNX with  a  TTL  to  prevent  double-bookings  during  
+the
+ 
+30-second
+ 
+conﬁrmation
+ 
+window.
+ 
+ 
+Recommended  tech  stack  to  start  Twilio  Voice   →   Node.js  /  FastAPI  backend   →   Deepgram  STT                           ↓                Claude  Agent  (function  calling)                      ↓            ↓               PostgreSQL      Redis  (slot  locks)                           ↓                Twilio  WhatsApp  API   →   Patient   
+Start  with  Twilio  for  both  voice  and  WhatsApp  —  it  keeps  everything  in  one  account,  simpliﬁes  
+billing,
+ 
+and
+ 
+their
+ 
+Node.js
+ 
+SDK
+ 
+is
+ 
+mature.
+ 
+Use
+ 
+Deepgram
+ 
+for
+ 
+STT
+ 
+(free
+ 
+tier
+ 
+covers
+ 
+early
+ 
+testing).
+ 
+Use
+ 
+Claude
+ 
+claude-sonnet-4-6
+ 
+as
+ 
+the
+ 
+agent
+ 
+with
+ 
+tool-use
+ 
+for
+ 
+all
+ 
+the
+ 
+booking
+ 
+logic.
+ 
+Then
+ 
+layer
+ 
+in
+ 
+EMR
+ 
+integration
+ 
+once
+ 
+the
+ 
+core
+ 
+ﬂow
+ 
+is
+ 
+working.
+ 
+--- Page 4 ---
+Want  me  to  sketch  out  the  agent's  system  prompt  and  tool  deﬁnitions,  or  the  database  
+schema
+ 
+for
+ 
+slots
+ 
+and
+ 
+bookings?
+ 
+ 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+How  the  function  will  work   
+For  the  AI  Receptionist  +  Voice  Agent  +  WhatsApp  Continuation  model,  I  would  design  it  
+like
+ 
+a
+ 
+modern
+ 
+healthcare
+ 
+SaaS
+ 
+platform
+ 
+rather
+ 
+than
+ 
+a
+ 
+traditional
+ 
+hospital
+ 
+management
+ 
+system.
+ 
+The  patient  experience  should  be:  
+Patient  Calls  Hospital  
+        ↓  
+AI  Receptionist  Answers  
+        ↓  
+Collect  Symptoms  
+        ↓  
+Find  Doctor  
+        ↓  
+"Available  options  sent  to  your  WhatsApp"  
+        ↓  
+Patient  Selects  Slot  
+        ↓  
+Appointment  Conﬁrmed  
+        ↓  
+Hospital  Dashboard  Updated  
+--- Page 5 ---
+ 
+ 
+1.  AI  Receptionist  Dashboard  (Hospital  Staﬀ)  
+This  is  the  screen  receptionists  and  administrators  see.  
+Dashboard  Home  
+------------------------------------------------------  
+ AI  Receptionist  Dashboard  
+------------------------------------------------------  
+ 
+Today's  Calls         245  
+Appointments  Booked    87  
+Transferred  to  Staﬀ   12  
+Missed  Calls            3  
+ 
+------------------------------------------------------  
+ Live  Calls  
+------------------------------------------------------  
+ 
+●  Caller:  +91  98XXXXXX21  
+Symptoms:  Chest  Pain  
+Suggested  Dept:  Cardiology  
+Status:  Selecting  Slot  
+--- Page 6 ---
+ 
+------------------------------------------------------  
+ 
+●  Caller:  +91  99XXXXXX34  
+Symptoms:  Skin  Allergy  
+Suggested  Dept:  Dermatology  
+Status:  Conﬁrmed  
+ 
+------------------------------------------------------  
+ 
+Analytics  Cards  
++----------------+----------------+  
+|  Calls  Today     |  Appointments    |  
+|  245             |  87              |  
++----------------+----------------+  
+ 
++----------------+----------------+  
+|  Avg  Duration    |  Conversion      |  
+|  3.2  min         |  72%             |  
++----------------+----------------+  
+ 
+ 
+--- Page 7 ---
+2.  Live  AI  Conversation  Monitor  
+This  is  useful  for  reception  managers.  
+------------------------------------------------------  
+Live  Conversation  
+------------------------------------------------------  
+ 
+AI:  
+Welcome  to  ABC  Hospital.  
+ 
+Patient:  
+I  have  severe  knee  pain.  
+ 
+AI:  
+How  long  have  you  experienced  this  pain?  
+ 
+Patient:  
+For  about  two  weeks.  
+ 
+AI:  
+I  recommend  an  Orthopedic  specialist.  
+ 
+Checking  availability...  
+ 
+--- Page 8 ---
+Available  options  have  been  sent  to  your  WhatsApp.  
+------------------------------------------------------  
+ 
+Staﬀ  can  intervene  if  needed.  
+[  Take  Over  Call  ]  
+ 
+ 
+3.  Doctor  Appointment  Tracking  Platform  
+This  becomes  the  operational  dashboard.  
+Appointment  Queue  
+---------------------------------------------------------  
+|  Time  |  Patient  |  Doctor  |  Department  |  Status  |  
+---------------------------------------------------------  
+|  10AM  |  Ravi     |  Dr  Rao  |  Cardiology  |  Conﬁrmed  |  
+|  11AM  |  Priya    |  Dr  Shah|  Dermatology|  Checked  In|  
+|  12PM  |  Karthik  |  Dr  Das  |  Orthopedic  |  Waiting    |  
+---------------------------------------------------------  
+ 
+Filters  
+Today  
+Tomorrow  
+This  Week  
+--- Page 9 ---
+ 
+Cardiology  
+Dermatology  
+Orthopedics  
+ENT  
+ 
+Conﬁrmed  
+Cancelled  
+No  Show  
+ 
+ 
+Doctor  Schedule  View  
+Dr.  Rajesh  Kumar  
+Orthopedics  
+ 
+09:00  AM   Booked  
+09:30  AM   Booked  
+10:00  AM   Available  
+10:30  AM   Available  
+11:00  AM   Booked  
+ 
+Calendar  style  view:  
+-------------------------------------------------  
+--- Page 10 ---
+MON   TUE   WED   THU   FRI  
+-------------------------------------------------  
+ 
+09:00  Ravi  
+09:30  Priya  
+10:00  Available  
+10:30  Available  
+11:00  Kumar  
+ 
+ 
+4.  WhatsApp  Experience  
+This  is  where  the  magic  happens.  
+After  AI  identiﬁes  the  doctor:  
+Message  1  
+ABC  Hospital  
+ 
+We  found  available  doctors  for  your  symptoms.  
+ 
+1.  Dr  Rajesh  Kumar  
+Orthopedic  Specialist  
+ 
+2.  Dr  Anitha  Rao  
+--- Page 11 ---
+Orthopedic  Specialist  
+ 
+Choose  a  doctor  below.  
+ 
+Buttons:  
+[  Dr  Rajesh  ]  
+[  Dr  Anitha  ]  
+ 
+ 
+Message  2  
+After  selecting  doctor:  
+Available  slots  for  
+Dr  Rajesh  Kumar  
+ 
+Today  
+4:00  PM  
+5:00  PM  
+ 
+Tomorrow  
+10:00  AM  
+11:00  AM  
+ 
+Buttons:  
+--- Page 12 ---
+[4  PM]  
+[5  PM]  
+[10  AM]  
+[11  AM]  
+ 
+ 
+Conﬁrmation  Message  
+✅  Appointment  Conﬁrmed  
+ 
+Patient:  
+Ravi  Kumar  
+ 
+Doctor:  
+Dr  Rajesh  Kumar  
+ 
+Department:  
+Orthopedics  
+ 
+Date:  
+25  July  2025  
+ 
+Time:  
+5:00  PM  
+--- Page 13 ---
+ 
+Location:  
+ABC  Hospital  
+3rd  Floor  
+Orthopedic  Wing  
+ 
+Booking  ID:  
+APT-25871  
+ 
+Buttons:  
+[Reschedule]  
+[Cancel]  
+[Directions]  
+ 
+ 
+5.  AI  Receptionist  Control  Center  
+Hospital  Admin  controls  the  AI.  
+AI  Settings  
+Voice  Language  
+ 
+☑  English  
+☑  Tamil  
+--- Page 14 ---
+☑  Hindi  
+☐  Telugu  
+☐  Kannada  
+ 
+Voice  Gender  
+ 
+☑  Female  
+☐  Male  
+ 
+ 
+Knowledge  Base  
+Upload:  
+Doctor  Proﬁles  
+Hospital  Policies  
+Insurance  Information  
+Departments  
+Consultation  Fees  
+FAQ  
+ 
+The  AI  automatically  learns  from  these.  
+ 
+6.  Executive  Dashboard  (Management)  
+--- Page 15 ---
+Hospital  owners  will  love  this.  
+Booking  Funnel  
+Calls  Received  
+245  
+ 
+AI  Conversations  
+232  
+ 
+Doctor  Matches  
+201  
+ 
+WhatsApp  Sent  
+198  
+ 
+Bookings  Conﬁrmed  
+87  
+ 
+Conversion:  
+35%  
+ 
+ 
+Popular  Departments  
+Cardiology       32%  
+--- Page 16 ---
+Orthopedics      27%  
+Dermatology      18%  
+ENT              12%  
+Others           11%  
+ 
+ 
+Recommended  UI  Layout  
+┌─────────────────────────────────────────────┐  
+│  AI  Receptionist  Dashboard                    │  
+├─────────────────────────────────────────────┤  
+│  Calls  │  Appointments  │  Revenue  │  Conversion  │  
+├─────────────────────────────────────────────┤  
+│                                              │  
+│  Live  Calls           Today's  Appointments     │  
+│                                              │  
+├─────────────────────────────────────────────┤  
+│  Doctor  Schedule       Appointment  Tracking    │  
+├─────────────────────────────────────────────┤  
+│  AI  Conversation  Monitor                      │  
+└─────────────────────────────────────────────┘  
+ 
+Suggested  Technology  Stack  
+--- Page 17 ---
+Frontend  
+●  React  +  Next.js  ●  Tailwind  CSS  ●  ShadCN  UI  ●  Recharts  
+Backend  
+●  Node.js  +  NestJS  ●  PostgreSQL  ●  Redis  
+AI  
+●  GPT-4o  Realtime  or  Claude  Sonnet  ●  Deepgram  STT  ●  ElevenLabs  TTS  
+Communication  
+●  Twilio  Voice  ●  WhatsApp  Business  API  (Twilio  or  360dialog)  
+ 
+ 
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259165825.pdf (8 pages) ===
+========================================
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+--- Page 6 ---
+
+--- Page 7 ---
+
+--- Page 8 ---
+
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259285795.pdf (4 pages) ===
+========================================
+
+--- Page 1 ---
+01  Executive Summary
+This report isolates the cost to operate the IVR agent (excluding setup fees and profit margin). At small-clinic volumes the single
+largest cost driver is Twilio speech recognition. Moving speech and WhatsApp to India-tuned providers cuts the monthly bill by
+76–82%.
+100 CALLS / MO
+₹2,270 → ₹540
+save 76%
+200 CALLS / MO
+₹3,440 → ₹680
+save 80%
+300 CALLS / MO
+₹4,600 → ₹820
+save 82%
+Current stack (Twilio + Groq)  →  Optimized low-cost stack. Full breakdown on the following pages.
+02  Contents
+03 Calculation Assumptions page 2
+04 Current Stack — Twilio + Groq page 2
+05 Lower-Cost Alternatives page 3
+06 Optimized Low-Cost Stack page 4
+07 Comparison & Savings page 4
+08 Trade-offs & Recommendation page 4
+03  Calculation Assumptions
+PARAMETER VALUE NOTES
+Average call duration 2.5 min Greeting → intent → day → time → name → confirm
+Speech "listen" turns / call 5 Each turn = one speech-recognition charge
+WhatsApp messages / call 1.5 Confirmation + occasional reminder / cancel
+AI understanding (Groq) ₹0 Free tier — sufficient for one clinic
+Database (SQLite) ₹0 Local file, no DB server
+Call counts are treated as per month. If they are per day, multiply every monthly figure by ~30.
+CLINIC IVR AGENT · COST ANALYSIS Operational Run Cost
+© 2026 · Internal planning document Page 2
+--- Page 2 ---
+04  Current Stack — Twilio + Groq
+Per-call variable cost
+COMPONENT PROVIDER UNIT RATE PER CALL
+Inbound voice (2.5 min) Twilio ₹0.85 / min ₹2.13
+Speech recognition (5 turns) Twilio ~₹1.70 / turn ₹8.50
+Text-to-speech (Say / Polly) Twilio included ₹0.00
+WhatsApp message (1.5) Twilio + Meta ~₹0.70 ea ₹1.05
+AI understanding Groq free tier ₹0.00
+Variable cost per call ≈ ₹11.7
+⚠  Cost driver: Twilio speech recognition alone is ~73% of the per-call cost — far more than the call minutes.
+Fixed monthly cost
+ITEM ₹ / MONTH
+Phone number rental (Twilio, India) ₹500
+Server / VPS hosting ₹600
+Fixed total ₹1,100
+Formula
+Monthly cost = (calls × ₹11.7) + ₹1,100 fixed
+Monthly cost by volume
+CALLS / MONTH VARIABLE FIXED TOTAL / MONTH PER CALL
+100 calls ₹1,170 ₹1,100 ₹2,270 ₹22.7
+200 calls ₹2,340 ₹1,100 ₹3,440 ₹17.2
+300 calls ₹3,510 ₹1,100 ₹4,600 ₹15.3
+CLINIC IVR AGENT · COST ANALYSIS Current Stack
+© 2026 · Internal planning document Page 3
+--- Page 3 ---
+05  Lower-Cost Alternatives
+Savings come from three swaps: cheaper Indian telephony, moving speech off Twilio, and WhatsApp direct via Meta.
+5a · Telephony / IVR  (replaces Twilio voice)
+PROVIDER VOICE RATE INDIA FIT NOTES
+Twilio current ~₹0.85/minGlobal Easy API, pricier; Indian number KYC needed
+Plivo cheaper ~₹0.50/minGood Twilio-like API → easy migration
+Exotel India-native ~₹0.40–0.60/minExcellent Indian compliance built-in; plans from ~₹2,000
+Ozonetel / Knowlarity plan-basedExcellent Indian cloud telephony + IVR bundles
+MyOperator / Servetel / Sarv ₹1,500–3,000/moExcellent Cheap bundled IVR for small business
+5b · Speech-to-Text  (the big cost — replaces Twilio Gather speech)
+PROVIDER COST INDIAN LANGUAGES NOTES
+Twilio built-in current ~₹1.70/turnOK Convenient but the most expensive part
+Bhashini (Govt of India) free free / near-zeroExcellent National AI language mission — best value
+Sarvam AI cheap ~₹0.30/minExcellent Built for India; strong TA/TE/KN accuracy
+Google Cloud STT ~₹1.4/min · 60min freeGood Reliable; free tier helps small clinics
+Self-hosted Whisper ₹0 (your server)Good Free if you have CPU/GPU; more setup
+5c · WhatsApp messaging
+PROVIDER COST NOTES
+Twilio WhatsApp current Meta fee + markupEasiest, but extra per-message surcharge
+Meta Cloud API (direct) cheapest 1,000 convos free, then ~₹0.35–0.70Removes Twilio markup; needs Meta business setup
+AiSensy / Interakt / WATI / Gupshup ₹999–2,500/moIndian BSPs; bundled credits + dashboard
+5d · AI & Hosting
+ITEM LOW-COST OPTION COST
+AI / NLU Groq (keep) · Gemini Flash free tier · local Ollama ₹0
+Hosting Oracle Cloud always-free VM · Hostinger / Contabo VPS ₹0 – ₹400
+Database SQLite (keep) ₹0
+CLINIC IVR AGENT · COST ANALYSIS Alternatives
+© 2026 · Internal planning document Page 4
+--- Page 4 ---
+06  Optimized Low-Cost Stack
+Plivo / Exotel voice · Bhashini / Sarvam speech · Meta WhatsApp direct · Groq · Oracle free VM
+Per-call variable cost
+COMPONENT PER CALL
+Voice (2.5 min @ ₹0.55) ₹1.38
+Speech recognition (5 turns) ₹0.00–0.75
+Text-to-speech ₹0.00
+WhatsApp (free tier) ₹0.00
+AI understanding ₹0.00
+Per call ≈ ₹1.4
+Fixed monthly cost
+ITEM ₹ / MO
+Phone number (Plivo/Exotel) ₹400
+Hosting (Oracle free tier) ₹0
+Fixed total ₹400
+Formula: (calls × ₹1.4) + ₹400 fixed
+07  Comparison & Savings
+CALLS / MONTH CURRENT (TWILIO) OPTIMIZED SAVE / MONTH SAVING
+100 calls ₹2,270 ₹540 ₹1,730 76%
+200 calls ₹3,440 ₹680 ₹2,760 80%
+300 calls ₹4,600 ₹820 ₹3,780 82%
+08  Trade-offs & Recommendation
+STACK PROS CONS BEST WHEN
+Current
+Twilio
+Fastest to ship · one vendor · speech built in ·
+reliable
+3–4× higher run cost; speech
+recognition expensive
+MVP / first client / quick
+launch
+Optimized
+low cost
+76–82% cheaper · India-tuned speech · better
+TA/TE/KN accuracy
+More integration work; multiple
+vendors
+Scaling to paying clients /
+many clinics
+Recommended path
+Launch on Twilio (already built) to get the first client live fast.
+Phase 1 — biggest win: move speech to Bhashini / Sarvam and WhatsApp to Meta direct. Removes ~73% of per-call
+cost with least rework.
+Phase 2: move voice to Plivo or Exotel for cheaper minutes + easier Indian compliance.
+Keep Groq + SQLite + Oracle free VM — already near-zero cost.
+CLINIC IVR AGENT · COST ANALYSIS Optimized Stack & Recommendation
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259285808.pdf (3 pages) ===
+========================================
+
+--- Page 1 ---
+01  Which Third Party Does What
+Every paid function in the app, the service used today, and the lower-cost service to switch to.
+FUNCTION USED NOW
+CURRENT
+SWITCH TO
+OPTIMIZED
+WHY IT'S CHEAPER
+Inbound voice / IVR Twilio Plivo  or  Exotel India-native minutes ₹0.55 vs ₹0.85; Twilio-like
+API
+Speech-to-text
+big driver
+Twilio Gather (built-
+in)
+Bhashini (free)  or 
+Sarvam AI
+~73% of current per-call cost; Bhashini is govt-
+funded free
+Text-to-speech Twilio Say / Polly Keep / Bhashini TTS Already bundled — no change needed
+WhatsApp messagingTwilio + Meta Meta Cloud API (direct)Removes Twilio per-message markup; 1,000 free
+convos/mo
+AI / NLU understanding Groq (free tier) Groq (keep) Already ₹0 — no change
+Database SQLite (local file) SQLite (keep) Already ₹0 — no server
+Hosting Paid VPS Oracle Cloud always-free
+VM
+Free tier sufficient at ≤1,000 calls/mo
+Phone number Twilio (India) Plivo / Exotel number ~₹400 vs ₹500/mo rental
+02  Per-Call Cost — Side by Side
+current   Twilio + Groq
+COMPONENT PER CALL
+Voice — 2.5 min @ ₹0.85 ₹2.13
+Speech recog. — 5 turns @ ₹1.70 ₹8.50
+Text-to-speech ₹0.00
+WhatsApp — 1.5 @ ₹0.70 ₹1.05
+AI understanding (Groq) ₹0.00
+Per call ≈ ₹11.7
+optimized   Plivo + Bhashini + Meta
+COMPONENT PER CALL
+Voice — 2.5 min @ ₹0.55 ₹1.38
+Speech recog. — Bhashini/Sarvam ₹0.00–0.75
+Text-to-speech ₹0.00
+WhatsApp — Meta free tier ₹0.00
+AI understanding (Groq) ₹0.00
+Per call ≈ ₹1.4
+⚠  The one big lever: Twilio speech recognition (₹8.50/call) is ~73% of the current cost. Moving just speech to
+Bhashini/Sarvam delivers most of the saving on its own.
+CLINIC IVR AGENT · COST COMPARISON Third-Party Stack
+© 2026 · Internal planning document Page 2
+--- Page 2 ---
+03  Monthly Cost at 100 / 300 / 500 / 1000 Calls
+Current = (calls × ₹11.7) + ₹1,100 fixed  ·  Optimized = (calls × ₹1.4) + ₹400 fixed
+100 / MO
+₹2,270 → ₹540
+save 76%
+300 / MO
+₹4,610 → ₹820
+save 82%
+500 / MO
+₹6,950 → ₹1,100
+save 84%
+1000 / MO
+₹12,800 → ₹1,800
+save 86%
+Full breakdown
+CALLS /
+MONTH
+CURRENT VARIABLE CURRENT FIXED CURRENT TOTAL PER CALL OPTIMIZED TOTAL PER CALL SAVE / M
+100 ₹1,170 ₹1,100 ₹2,270 ₹22.7 ₹540 ₹5.4 ₹1,73
+300 ₹3,510 ₹1,100 ₹4,610 ₹15.4 ₹820 ₹2.7 ₹3,79
+500 ₹5,850 ₹1,100 ₹6,950 ₹13.9 ₹1,100 ₹2.2 ₹5,85
+1000 ₹11,700 ₹1,100 ₹12,800 ₹12.8 ₹1,800 ₹1.8 ₹11,00
+Annual view (× 12)
+CALLS / MONTH CURRENT / YEAR OPTIMIZED / YEAR SAVED / YEAR
+100 ₹27,240 ₹6,480 ₹20,760
+300 ₹55,320 ₹9,840 ₹45,480
+500 ₹83,400 ₹13,200 ₹70,200
+1000 ₹1,53,600 ₹21,600 ₹1,32,000
+Pattern: the more calls, the bigger the saving %, because the current stack's expensive per-call speech recognition scales
+linearly while the optimized per-call cost stays near zero. At 1,000 calls/month the switch saves ₹1.32 lakh/year.
+Note at 1,000 calls: WhatsApp free tier (1,000 conversations/mo) is close to its limit and Groq free-tier limits may begin to apply — add a small buffer
+(~₹0.3–0.5/call) if both run hot. Below 500 calls the free tiers hold comfortably.
+CLINIC IVR AGENT · COST COMPARISON By Volume
+© 2026 · Internal planning document Page 3
+--- Page 3 ---
+04  Lower-Cost Provider Options
+Telephony / IVR  (replaces Twilio voice)
+PROVIDER VOICE RATE INDIA FIT NOTES
+Twilio current ~₹0.85/minGlobal Easy API, pricier; Indian number KYC needed
+Plivo recommended ~₹0.50/minGood Twilio-like API → easiest migration
+Exotel India-native ~₹0.40–0.60/minExcellent Indian compliance built-in; plans from ~₹2,000
+Ozonetel / Knowlarity plan-basedExcellent Indian cloud telephony + IVR bundles
+Speech-to-Text  (the biggest saving — replaces Twilio Gather)
+PROVIDER COST INDIAN
+LANGUAGES
+NOTES
+Twilio built-in current ~₹1.70/turnOK Convenient but the most expensive part
+Bhashini (Govt of India)
+recommended
+free / near-zeroExcellent National AI language mission — best
+value
+Sarvam AI cheap ~₹0.30/minExcellent Built for India; strong TA/TE/KN
+accuracy
+Google Cloud STT ~₹1.4/min · 60min freeGood Reliable; free tier helps
+WhatsApp messaging
+PROVIDER COST NOTES
+Twilio WhatsApp current Meta fee + markupEasiest, extra per-message surcharge
+Meta Cloud API (direct)
+recommended
+1,000 convos free, then ~₹0.35–0.70Removes Twilio markup; needs Meta business
+setup
+AiSensy / Interakt / Gupshup ₹999–2,500/moIndian BSPs; bundled credits + dashboard
+05  Recommended Migration Path
+Launch on Twilio (already built) to get the first clinic live fast.
+Phase 1 — biggest win: move speech to Bhashini / Sarvam and WhatsApp to Meta direct. Removes ~73% of per-call
+cost with least rework.
+Phase 2: move voice to Plivo or Exotel for cheaper minutes + easier Indian compliance.
+Keep Groq + SQLite + Oracle free VM — already near-zero cost.
+CLINIC IVR AGENT · COST COMPARISON Provider Options & Plan
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259285809.pdf (17 pages) ===
+========================================
+
+--- Page 1 ---
+ 
+System  components  
+1.  Phone  /  IVR  layer  —  Twilio  Voice  or  Vonage  
+This  is  the  entry  point.  When  a  patient  calls  the  hospital  number,  Twilio  answers  the  call  and  
+streams
+ 
+audio
+ 
+to
+ 
+your
+ 
+backend.
+ 
+Twilio
+ 
+also
+ 
+handles
+ 
+TTS
+ 
+playback
+ 
+(speaking
+ 
+responses
+ 
+back
+ 
+to
+ 
+the
+ 
+patient).
+ 
+You'll
+ 
+conﬁgure
+ 
+a
+ 
+webhook
+ 
+URL
+ 
+that
+ 
+Twilio
+ 
+hits
+ 
+on
+ 
+every
+ 
+incoming
+ 
+call,
+ 
+and
+ 
+your
+ 
+server
+ 
+responds
+ 
+with
+ 
+TwiML
+ 
+(XML
+ 
+instructions)
+ 
+or
+ 
+uses
+ 
+Twilio's
+ 
+Media
+ 
+Streams
+ 
+to
+ 
+pipe
+ 
+raw
+ 
+audio.
+ 
+2.  Speech-to-text  (STT)  
+Convert  patient  speech  to  text  in  real  time.  Best  options:  Deepgram  (lowest  latency,  medical  
+vocabulary
+ 
+support),
+ 
+OpenAI
+ 
+Whisper
+ 
+(high
+ 
+accuracy,
+ 
+good
+ 
+for
+ 
+accented
+ 
+speech),
+ 
+or
+ 
+Google
+ 
+Speech-to-Text
+ 
+(solid
+ 
+HL7-compatible
+ 
+option).
+ 
+Deepgram
+ 
+is
+ 
+the
+ 
+top
+ 
+pick
+ 
+for
+ 
+IVR
+ 
+because
+ 
+it
+ 
+has
+ 
+sub-300ms
+ 
+streaming
+ 
+transcription.
+ 
+3.  AI  orchestrator  (the  "brain")  
+This  is  your  LLM  agent  —  Claude  or  GPT-4o  —  running  with  tool/function  calling  enabled.  Its  
+job
+ 
+is
+ 
+to:
+ 
+●  Understand  the  patient's  intent  and  symptoms  ●  Extract  structured  data  (name,  age,  phone  number,  illness)  ●  Decide  which  specialist  to  route  to  (cardiologist,  ortho,  ENT,  etc.)  ●  Call  your  internal  APIs  to  query  available  slots  ●  Conﬁrm  and  write  the  booking  
+You  deﬁne  a  system  prompt  that  gives  the  agent  a  persona  ("You  are  the  hospital's  
+appointment
+ 
+assistant...")
+ 
+and
+ 
+a
+ 
+set
+ 
+of
+ 
+tools
+ 
+it
+ 
+can
+ 
+call:
+ get_patient_record, ﬁnd_specialists_by_symptom, get_available_slots, book_appointment, send_whatsapp_conﬁrmation. 
+4.  Text-to-speech  (TTS)  
+Convert  the  agent's  text  response  back  to  audio  for  the  patient.  ElevenLabs  gives  the  most  
+natural
+ 
+voice;
+ 
+Amazon
+ 
+Polly
+ 
+is
+ 
+cheaper
+ 
+and
+ 
+still
+ 
+very
+ 
+good.
+ 
+The
+ 
+audio
+ 
+is
+ 
+streamed
+ 
+back
+ 
+through
+ 
+Twilio.
+ 
+--- Page 2 ---
+5.  Slot  scheduling  logic  
+This  is  your  own  backend  service.  It  queries  a  database  of  doctors  and  their  calendars,  returns  
+open
+ 
+slots
+ 
+ﬁltered
+ 
+by:
+ 
+existing
+ 
+bookings,
+ 
+doctor
+ 
+working
+ 
+hours,
+ 
+consultation
+ 
+duration,
+ 
+and
+ 
+specialty.
+ 
+Use
+ 
+PostgreSQL
+ 
+or
+ 
+MongoDB
+ 
+for
+ 
+storage,
+ 
+with
+ 
+Redis
+ 
+for
+ 
+caching
+ 
+slot
+ 
+availability
+ 
+to
+ 
+avoid
+ 
+race
+ 
+conditions
+ 
+when
+ 
+multiple
+ 
+patients
+ 
+book
+ 
+simultaneously.
+ 
+6.  WhatsApp  delivery  —  Twilio  WhatsApp  API  or  360dialog  
+Once  a  booking  is  conﬁrmed,  trigger  a  WhatsApp  message  (using  an  approved  template)  to  
+the
+ 
+patient's
+ 
+number
+ 
+with
+ 
+the
+ 
+doctor's
+ 
+name,
+ 
+specialty,
+ 
+date,
+ 
+time,
+ 
+clinic
+ 
+location,
+ 
+and
+ 
+a
+ 
+cancellation
+ 
+link.
+ 
+Twilio's
+ 
+WhatsApp
+ 
+API
+ 
+is
+ 
+the
+ 
+easiest
+ 
+to
+ 
+integrate
+ 
+if
+ 
+you're
+ 
+already
+ 
+using
+ 
+Twilio
+ 
+for
+ 
+voice.
+ 
+7.  HIS/EMR  integration  (optional  but  recommended)  
+Connect  to  the  hospital's  existing  Health  Information  System  via  HL7  FHIR  APIs  to  pull  real  
+patient
+ 
+records
+ 
+(if
+ 
+they're
+ 
+returning
+ 
+patients),
+ 
+write
+ 
+conﬁrmed
+ 
+appointments
+ 
+back
+ 
+to
+ 
+the
+ 
+clinical
+ 
+system,
+ 
+and
+ 
+check
+ 
+doctor
+ 
+schedules
+ 
+from
+ 
+the
+ 
+source
+ 
+of
+ 
+truth.
+ 
+ 
+Third-party  services  needed  
+Purpose  Recommended  Alternative  
+Phone/IVR  Twilio  Voice  Vonage,  Plivo  
+STT  Deepgram  Whisper  API,  Google  STT  
+LLM  Agent  Claude  claude-sonnet-4-6  or  GPT-4o  
+Gemini  1.5  Pro  
+TTS  ElevenLabs  Amazon  Polly,  Azure  TTS  
+WhatsApp  Twilio  WhatsApp  API  360dialog,  Gupshup  
+Database  PostgreSQL  MongoDB  
+Cache/locks  Redis  DynamoDB  
+Hosting  AWS  /  GCP  /  Azure  Railway,  Render  
+ 
+--- Page 3 ---
+How  to  run  it  as  software  
+Backend  stack:  Node.js  (TypeScript)  —  both  have  excellent  Twilio  and  LLM  SDKs.  
+The  core  server  exposes  these  endpoints:  
+●  POST  /voice/inbound —  Twilio  webhook  when  a  call  arrives;  returns  TwiML  to  open  a  
+media
+ 
+stream
+ ●  WebSocket  /voice/stream —  receives  live  audio  from  Twilio,  pipes  to  STT,  runs  agent,  
+streams
+ 
+TTS
+ 
+back
+ ●  POST  /appointments/slots —  internal  API  to  query  available  slots  ●  POST  /appointments/book —  writes  a  conﬁrmed  booking  ●  POST  /whatsapp/send —  ﬁres  the  WhatsApp  conﬁrmation  message  
+Deployment:  Containerise  with  Docker  and  run  on  a  cloud  VM  (AWS  EC2,  GCP  Compute  
+Engine)
+ 
+or
+ 
+a
+ 
+managed
+ 
+container
+ 
+service
+ 
+(AWS
+ 
+ECS,
+ 
+Cloud
+ 
+Run).
+ 
+The
+ 
+WebSocket
+ 
+server
+ 
+needs
+ 
+a
+ 
+stable,
+ 
+low-latency
+ 
+connection
+ 
+—
+ 
+avoid
+ 
+serverless
+ 
+for
+ 
+the
+ 
+streaming
+ 
+audio
+ 
+path.
+ 
+Concurrency:  Use  a  job  queue  (BullMQ  or  Celery)  for  WhatsApp  delivery  and  any  async  
+operations.
+ 
+For
+ 
+slot
+ 
+locking,
+ 
+use
+ 
+Redis
+ SETNX with  a  TTL  to  prevent  double-bookings  during  
+the
+ 
+30-second
+ 
+conﬁrmation
+ 
+window.
+ 
+ 
+Recommended  tech  stack  to  start  Twilio  Voice   →   Node.js  /  FastAPI  backend   →   Deepgram  STT                           ↓                Claude  Agent  (function  calling)                      ↓            ↓               PostgreSQL      Redis  (slot  locks)                           ↓                Twilio  WhatsApp  API   →   Patient   
+Start  with  Twilio  for  both  voice  and  WhatsApp  —  it  keeps  everything  in  one  account,  simpliﬁes  
+billing,
+ 
+and
+ 
+their
+ 
+Node.js
+ 
+SDK
+ 
+is
+ 
+mature.
+ 
+Use
+ 
+Deepgram
+ 
+for
+ 
+STT
+ 
+(free
+ 
+tier
+ 
+covers
+ 
+early
+ 
+testing).
+ 
+Use
+ 
+Claude
+ 
+claude-sonnet-4-6
+ 
+as
+ 
+the
+ 
+agent
+ 
+with
+ 
+tool-use
+ 
+for
+ 
+all
+ 
+the
+ 
+booking
+ 
+logic.
+ 
+Then
+ 
+layer
+ 
+in
+ 
+EMR
+ 
+integration
+ 
+once
+ 
+the
+ 
+core
+ 
+ﬂow
+ 
+is
+ 
+working.
+ 
+--- Page 4 ---
+Want  me  to  sketch  out  the  agent's  system  prompt  and  tool  deﬁnitions,  or  the  database  
+schema
+ 
+for
+ 
+slots
+ 
+and
+ 
+bookings?
+ 
+ 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+How  the  function  will  work   
+For  the  AI  Receptionist  +  Voice  Agent  +  WhatsApp  Continuation  model,  I  would  design  it  
+like
+ 
+a
+ 
+modern
+ 
+healthcare
+ 
+SaaS
+ 
+platform
+ 
+rather
+ 
+than
+ 
+a
+ 
+traditional
+ 
+hospital
+ 
+management
+ 
+system.
+ 
+The  patient  experience  should  be:  
+Patient  Calls  Hospital  
+        ↓  
+AI  Receptionist  Answers  
+        ↓  
+Collect  Symptoms  
+        ↓  
+Find  Doctor  
+        ↓  
+"Available  options  sent  to  your  WhatsApp"  
+        ↓  
+Patient  Selects  Slot  
+        ↓  
+Appointment  Conﬁrmed  
+        ↓  
+Hospital  Dashboard  Updated  
+--- Page 5 ---
+ 
+ 
+1.  AI  Receptionist  Dashboard  (Hospital  Staﬀ)  
+This  is  the  screen  receptionists  and  administrators  see.  
+Dashboard  Home  
+------------------------------------------------------  
+ AI  Receptionist  Dashboard  
+------------------------------------------------------  
+ 
+Today's  Calls         245  
+Appointments  Booked    87  
+Transferred  to  Staﬀ   12  
+Missed  Calls            3  
+ 
+------------------------------------------------------  
+ Live  Calls  
+------------------------------------------------------  
+ 
+●  Caller:  +91  98XXXXXX21  
+Symptoms:  Chest  Pain  
+Suggested  Dept:  Cardiology  
+Status:  Selecting  Slot  
+--- Page 6 ---
+ 
+------------------------------------------------------  
+ 
+●  Caller:  +91  99XXXXXX34  
+Symptoms:  Skin  Allergy  
+Suggested  Dept:  Dermatology  
+Status:  Conﬁrmed  
+ 
+------------------------------------------------------  
+ 
+Analytics  Cards  
++----------------+----------------+  
+|  Calls  Today     |  Appointments    |  
+|  245             |  87              |  
++----------------+----------------+  
+ 
++----------------+----------------+  
+|  Avg  Duration    |  Conversion      |  
+|  3.2  min         |  72%             |  
++----------------+----------------+  
+ 
+ 
+--- Page 7 ---
+2.  Live  AI  Conversation  Monitor  
+This  is  useful  for  reception  managers.  
+------------------------------------------------------  
+Live  Conversation  
+------------------------------------------------------  
+ 
+AI:  
+Welcome  to  ABC  Hospital.  
+ 
+Patient:  
+I  have  severe  knee  pain.  
+ 
+AI:  
+How  long  have  you  experienced  this  pain?  
+ 
+Patient:  
+For  about  two  weeks.  
+ 
+AI:  
+I  recommend  an  Orthopedic  specialist.  
+ 
+Checking  availability...  
+ 
+--- Page 8 ---
+Available  options  have  been  sent  to  your  WhatsApp.  
+------------------------------------------------------  
+ 
+Staﬀ  can  intervene  if  needed.  
+[  Take  Over  Call  ]  
+ 
+ 
+3.  Doctor  Appointment  Tracking  Platform  
+This  becomes  the  operational  dashboard.  
+Appointment  Queue  
+---------------------------------------------------------  
+|  Time  |  Patient  |  Doctor  |  Department  |  Status  |  
+---------------------------------------------------------  
+|  10AM  |  Ravi     |  Dr  Rao  |  Cardiology  |  Conﬁrmed  |  
+|  11AM  |  Priya    |  Dr  Shah|  Dermatology|  Checked  In|  
+|  12PM  |  Karthik  |  Dr  Das  |  Orthopedic  |  Waiting    |  
+---------------------------------------------------------  
+ 
+Filters  
+Today  
+Tomorrow  
+This  Week  
+--- Page 9 ---
+ 
+Cardiology  
+Dermatology  
+Orthopedics  
+ENT  
+ 
+Conﬁrmed  
+Cancelled  
+No  Show  
+ 
+ 
+Doctor  Schedule  View  
+Dr.  Rajesh  Kumar  
+Orthopedics  
+ 
+09:00  AM   Booked  
+09:30  AM   Booked  
+10:00  AM   Available  
+10:30  AM   Available  
+11:00  AM   Booked  
+ 
+Calendar  style  view:  
+-------------------------------------------------  
+--- Page 10 ---
+MON   TUE   WED   THU   FRI  
+-------------------------------------------------  
+ 
+09:00  Ravi  
+09:30  Priya  
+10:00  Available  
+10:30  Available  
+11:00  Kumar  
+ 
+ 
+4.  WhatsApp  Experience  
+This  is  where  the  magic  happens.  
+After  AI  identiﬁes  the  doctor:  
+Message  1  
+ABC  Hospital  
+ 
+We  found  available  doctors  for  your  symptoms.  
+ 
+1.  Dr  Rajesh  Kumar  
+Orthopedic  Specialist  
+ 
+2.  Dr  Anitha  Rao  
+--- Page 11 ---
+Orthopedic  Specialist  
+ 
+Choose  a  doctor  below.  
+ 
+Buttons:  
+[  Dr  Rajesh  ]  
+[  Dr  Anitha  ]  
+ 
+ 
+Message  2  
+After  selecting  doctor:  
+Available  slots  for  
+Dr  Rajesh  Kumar  
+ 
+Today  
+4:00  PM  
+5:00  PM  
+ 
+Tomorrow  
+10:00  AM  
+11:00  AM  
+ 
+Buttons:  
+--- Page 12 ---
+[4  PM]  
+[5  PM]  
+[10  AM]  
+[11  AM]  
+ 
+ 
+Conﬁrmation  Message  
+✅  Appointment  Conﬁrmed  
+ 
+Patient:  
+Ravi  Kumar  
+ 
+Doctor:  
+Dr  Rajesh  Kumar  
+ 
+Department:  
+Orthopedics  
+ 
+Date:  
+25  July  2025  
+ 
+Time:  
+5:00  PM  
+--- Page 13 ---
+ 
+Location:  
+ABC  Hospital  
+3rd  Floor  
+Orthopedic  Wing  
+ 
+Booking  ID:  
+APT-25871  
+ 
+Buttons:  
+[Reschedule]  
+[Cancel]  
+[Directions]  
+ 
+ 
+5.  AI  Receptionist  Control  Center  
+Hospital  Admin  controls  the  AI.  
+AI  Settings  
+Voice  Language  
+ 
+☑  English  
+☑  Tamil  
+--- Page 14 ---
+☑  Hindi  
+☐  Telugu  
+☐  Kannada  
+ 
+Voice  Gender  
+ 
+☑  Female  
+☐  Male  
+ 
+ 
+Knowledge  Base  
+Upload:  
+Doctor  Proﬁles  
+Hospital  Policies  
+Insurance  Information  
+Departments  
+Consultation  Fees  
+FAQ  
+ 
+The  AI  automatically  learns  from  these.  
+ 
+6.  Executive  Dashboard  (Management)  
+--- Page 15 ---
+Hospital  owners  will  love  this.  
+Booking  Funnel  
+Calls  Received  
+245  
+ 
+AI  Conversations  
+232  
+ 
+Doctor  Matches  
+201  
+ 
+WhatsApp  Sent  
+198  
+ 
+Bookings  Conﬁrmed  
+87  
+ 
+Conversion:  
+35%  
+ 
+ 
+Popular  Departments  
+Cardiology       32%  
+--- Page 16 ---
+Orthopedics      27%  
+Dermatology      18%  
+ENT              12%  
+Others           11%  
+ 
+ 
+Recommended  UI  Layout  
+┌─────────────────────────────────────────────┐  
+│  AI  Receptionist  Dashboard                    │  
+├─────────────────────────────────────────────┤  
+│  Calls  │  Appointments  │  Revenue  │  Conversion  │  
+├─────────────────────────────────────────────┤  
+│                                              │  
+│  Live  Calls           Today's  Appointments     │  
+│                                              │  
+├─────────────────────────────────────────────┤  
+│  Doctor  Schedule       Appointment  Tracking    │  
+├─────────────────────────────────────────────┤  
+│  AI  Conversation  Monitor                      │  
+└─────────────────────────────────────────────┘  
+ 
+Suggested  Technology  Stack  
+--- Page 17 ---
+Frontend  
+●  React  +  Next.js  ●  Tailwind  CSS  ●  ShadCN  UI  ●  Recharts  
+Backend  
+●  Node.js  +  NestJS  ●  PostgreSQL  ●  Redis  
+AI  
+●  GPT-4o  Realtime  or  Claude  Sonnet  ●  Deepgram  STT  ●  ElevenLabs  TTS  
+Communication  
+●  Twilio  Voice  ●  WhatsApp  Business  API  (Twilio  or  360dialog)  
+ 
+ 
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259286028.pdf (8 pages) ===
+========================================
+
+--- Page 1 ---
+Screen 1
+Dashboard Screen: Displays doctor overview including availability status, total calls, appointments,
+next appointment time, completed consultations, upcoming appointments, patient queue, and
+recent activity updates.
+
+--- Page 2 ---
+Screen 2
+Bookings Screen: Shows today's appointments in a card layout with patient details, token numbers,
+appointment times, and quick access to booking information.
+
+--- Page 3 ---
+Screen 3
+Bookings Filter Screen: Provides appointment filtering options such as All, Upcoming, and
+Completed to help doctors manage consultations efficiently.
+
+--- Page 4 ---
+Screen 4
+Bookings Calendar View: Allows doctors to view appointments by date using a calendar selector
+with daily schedule filtering.
+
+--- Page 5 ---
+Screen 5
+Schedule Overview Screen: Displays available time slots and today's scheduled appointments,
+helping doctors manage their consultation hours.
+
+--- Page 6 ---
+Screen 6
+Schedule Management Screen: Enables doctors to create, edit, and organize appointment slots
+while viewing existing schedules.
+
+--- Page 7 ---
+Screen 7
+Reports Screen: Presents performance metrics such as total calls, appointments, completed
+consultations, and recent activity summaries.
+
+--- Page 8 ---
+Screen 8
+Notifications Screen: Displays real-time alerts including new bookings, appointment confirmations,
+schedule updates, and other important activities.
+
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259625579.pdf (1 pages) ===
+========================================
+
+--- Page 1 ---
+Hospital AI App - Payment Gateway Comparison Report
+Project: Hospital AI App
+Purpose: Compare Stripe, PayPal and Razorpay.
+1. Payment Gateway Comparison
+Category
+Stripe
+PayPal
+Razorpay
+Monthly Fee
+₹0
+₹0
+₹0
+Setup Fee
+₹0
+₹0
+₹0
+Annual Fee
+₹0
+₹0
+₹0
+Domestic Payments
+Supported
+Not supported
+Supported
+International Payments
+Supported
+Supported
+Supported
+Domestic Fee
+2%
+N/A
+2% + GST
+International Fee
+3%
+4.40% + Fixed
+3% + GST
+Currency Conversion
+~2%
+3% above base
+May apply
+Typical Charges
+~5%
+~7–8%
+~3% + GST (+FX)
+Countries
+195+
+200+
+100+
+Currencies
+135+
+25+
+160+
+Subscriptions
+Supported
+Supported
+Supported
+Webhooks
+Supported
+Supported
+Supported
+Refund API
+Supported
+Supported
+Supported
+Checkout
+Embedded
+Redirect
+Embedded
+Dashboard
+Excellent
+Good
+Excellent
+Payout to Indian Bank
+Supported
+Supported
+Supported
+Best For
+Global SaaS / Healthcare
+PayPal Users
+India + Global
+2. Example Transaction Comparison
+Customer Pays
+Stripe
+PayPal
+Razorpay
+₹1,000 (India)
+Receive ~₹980
+Not Supported
+Receive ~₹980*
+$10
+~$9.50
+~$8.96
+~97% before FX
+$100
+~$95.00
+~$92.30
+~97% before FX
+$500
+~$475.00
+~$462.70
+~97% before FX
+
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259625580.pdf (3 pages) ===
+========================================
+
+--- Page 1 ---
+AI Hospital Agent
+ Billing System Architecture
+Overview
+The Billing System manages the complete financial lifecycle of every consultation.
+It determines the doctor's consultation fee, applies configurable business rules,
+generates a transparent invoice, processes payments securely, records financial
+transactions, calculates settlement, and completes doctor payouts.
+1. Pricing Engine
+Determines the doctor's base consultation fee.
+ Retrieve doctor consultation fee.
+ Validate consultation type.
+ Validate appointment type.
+ Return base consultation fee.
+2. Billing Engine
+Calculates the final payable amount.
+ Apply platform fee.
+ Calculate GST.
+ Apply gateway fee.
+ Apply discounts/coupons.
+ Calculate grand total.
+3. Invoice Engine
+Generates the invoice before payment.
+ Generate invoice number.
+ Create billing breakdown.
+ Freeze invoice.
+ Generate PDF.
+
+--- Page 2 ---
+ Store invoice history.
+4. Payment Engine
+Processes Stripe/Razorpay payments.
+ Create payment order.
+ Initiate payment.
+ Verify payment.
+ Handle webhook.
+ Update payment status.
+5. Financial Ledger
+Creates immutable accounting records.
+ Record payment.
+ Record doctor credit.
+ Record platform revenue.
+ Maintain audit history.
+6. Settlement Engine
+Calculates revenue distribution.
+ Calculate doctor earnings.
+ Calculate platform revenue.
+ Calculate taxes.
+ Prepare payout details.
+7. Payout Service
+Transfers money to doctors.
+ Identify payout eligible earnings.
+ Execute scheduled payouts.
+ Transfer to doctor bank account.
+ Update payout records.
+
+--- Page 3 ---
+Complete Billing Workflow
+ Patient Books Appointment
+ ↓
+Pricing Engine
+ ↓
+Billing Engine
+ ↓
+Invoice Engine
+ ↓
+Patient Reviews Invoice
+ ↓
+Payment Engine (Stripe / Razorpay)
+ ↓
+AI Hospital Platform Account
+ ↓
+Payment Verification (Webhook)
+ ↓
+Financial Ledger Entry
+ ↓
+Settlement Engine
+ ↓
+Doctor Ledger & Platform Revenue
+ ↓
+Payout Service
+ ↓
+Doctor Bank Account
+
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259625581.pdf (17 pages) ===
+========================================
+
+--- Page 1 ---
+ 
+System  components  
+1.  Phone  /  IVR  layer  —  Twilio  Voice  or  Vonage  
+This  is  the  entry  point.  When  a  patient  calls  the  hospital  number,  Twilio  answers  the  call  and  
+streams
+ 
+audio
+ 
+to
+ 
+your
+ 
+backend.
+ 
+Twilio
+ 
+also
+ 
+handles
+ 
+TTS
+ 
+playback
+ 
+(speaking
+ 
+responses
+ 
+back
+ 
+to
+ 
+the
+ 
+patient).
+ 
+You'll
+ 
+conﬁgure
+ 
+a
+ 
+webhook
+ 
+URL
+ 
+that
+ 
+Twilio
+ 
+hits
+ 
+on
+ 
+every
+ 
+incoming
+ 
+call,
+ 
+and
+ 
+your
+ 
+server
+ 
+responds
+ 
+with
+ 
+TwiML
+ 
+(XML
+ 
+instructions)
+ 
+or
+ 
+uses
+ 
+Twilio's
+ 
+Media
+ 
+Streams
+ 
+to
+ 
+pipe
+ 
+raw
+ 
+audio.
+ 
+2.  Speech-to-text  (STT)  
+Convert  patient  speech  to  text  in  real  time.  Best  options:  Deepgram  (lowest  latency,  medical  
+vocabulary
+ 
+support),
+ 
+OpenAI
+ 
+Whisper
+ 
+(high
+ 
+accuracy,
+ 
+good
+ 
+for
+ 
+accented
+ 
+speech),
+ 
+or
+ 
+Google
+ 
+Speech-to-Text
+ 
+(solid
+ 
+HL7-compatible
+ 
+option).
+ 
+Deepgram
+ 
+is
+ 
+the
+ 
+top
+ 
+pick
+ 
+for
+ 
+IVR
+ 
+because
+ 
+it
+ 
+has
+ 
+sub-300ms
+ 
+streaming
+ 
+transcription.
+ 
+3.  AI  orchestrator  (the  "brain")  
+This  is  your  LLM  agent  —  Claude  or  GPT-4o  —  running  with  tool/function  calling  enabled.  Its  
+job
+ 
+is
+ 
+to:
+ 
+●  Understand  the  patient's  intent  and  symptoms  ●  Extract  structured  data  (name,  age,  phone  number,  illness)  ●  Decide  which  specialist  to  route  to  (cardiologist,  ortho,  ENT,  etc.)  ●  Call  your  internal  APIs  to  query  available  slots  ●  Conﬁrm  and  write  the  booking  
+You  deﬁne  a  system  prompt  that  gives  the  agent  a  persona  ("You  are  the  hospital's  
+appointment
+ 
+assistant...")
+ 
+and
+ 
+a
+ 
+set
+ 
+of
+ 
+tools
+ 
+it
+ 
+can
+ 
+call:
+ get_patient_record, ﬁnd_specialists_by_symptom, get_available_slots, book_appointment, send_whatsapp_conﬁrmation. 
+4.  Text-to-speech  (TTS)  
+Convert  the  agent's  text  response  back  to  audio  for  the  patient.  ElevenLabs  gives  the  most  
+natural
+ 
+voice;
+ 
+Amazon
+ 
+Polly
+ 
+is
+ 
+cheaper
+ 
+and
+ 
+still
+ 
+very
+ 
+good.
+ 
+The
+ 
+audio
+ 
+is
+ 
+streamed
+ 
+back
+ 
+through
+ 
+Twilio.
+ 
+--- Page 2 ---
+5.  Slot  scheduling  logic  
+This  is  your  own  backend  service.  It  queries  a  database  of  doctors  and  their  calendars,  returns  
+open
+ 
+slots
+ 
+ﬁltered
+ 
+by:
+ 
+existing
+ 
+bookings,
+ 
+doctor
+ 
+working
+ 
+hours,
+ 
+consultation
+ 
+duration,
+ 
+and
+ 
+specialty.
+ 
+Use
+ 
+PostgreSQL
+ 
+or
+ 
+MongoDB
+ 
+for
+ 
+storage,
+ 
+with
+ 
+Redis
+ 
+for
+ 
+caching
+ 
+slot
+ 
+availability
+ 
+to
+ 
+avoid
+ 
+race
+ 
+conditions
+ 
+when
+ 
+multiple
+ 
+patients
+ 
+book
+ 
+simultaneously.
+ 
+6.  WhatsApp  delivery  —  Twilio  WhatsApp  API  or  360dialog  
+Once  a  booking  is  conﬁrmed,  trigger  a  WhatsApp  message  (using  an  approved  template)  to  
+the
+ 
+patient's
+ 
+number
+ 
+with
+ 
+the
+ 
+doctor's
+ 
+name,
+ 
+specialty,
+ 
+date,
+ 
+time,
+ 
+clinic
+ 
+location,
+ 
+and
+ 
+a
+ 
+cancellation
+ 
+link.
+ 
+Twilio's
+ 
+WhatsApp
+ 
+API
+ 
+is
+ 
+the
+ 
+easiest
+ 
+to
+ 
+integrate
+ 
+if
+ 
+you're
+ 
+already
+ 
+using
+ 
+Twilio
+ 
+for
+ 
+voice.
+ 
+7.  HIS/EMR  integration  (optional  but  recommended)  
+Connect  to  the  hospital's  existing  Health  Information  System  via  HL7  FHIR  APIs  to  pull  real  
+patient
+ 
+records
+ 
+(if
+ 
+they're
+ 
+returning
+ 
+patients),
+ 
+write
+ 
+conﬁrmed
+ 
+appointments
+ 
+back
+ 
+to
+ 
+the
+ 
+clinical
+ 
+system,
+ 
+and
+ 
+check
+ 
+doctor
+ 
+schedules
+ 
+from
+ 
+the
+ 
+source
+ 
+of
+ 
+truth.
+ 
+ 
+Third-party  services  needed  
+Purpose  Recommended  Alternative  
+Phone/IVR  Twilio  Voice  Vonage,  Plivo  
+STT  Deepgram  Whisper  API,  Google  STT  
+LLM  Agent  Claude  claude-sonnet-4-6  or  GPT-4o  
+Gemini  1.5  Pro  
+TTS  ElevenLabs  Amazon  Polly,  Azure  TTS  
+WhatsApp  Twilio  WhatsApp  API  360dialog,  Gupshup  
+Database  PostgreSQL  MongoDB  
+Cache/locks  Redis  DynamoDB  
+Hosting  AWS  /  GCP  /  Azure  Railway,  Render  
+ 
+--- Page 3 ---
+How  to  run  it  as  software  
+Backend  stack:  Node.js  (TypeScript)  —  both  have  excellent  Twilio  and  LLM  SDKs.  
+The  core  server  exposes  these  endpoints:  
+●  POST  /voice/inbound —  Twilio  webhook  when  a  call  arrives;  returns  TwiML  to  open  a  
+media
+ 
+stream
+ ●  WebSocket  /voice/stream —  receives  live  audio  from  Twilio,  pipes  to  STT,  runs  agent,  
+streams
+ 
+TTS
+ 
+back
+ ●  POST  /appointments/slots —  internal  API  to  query  available  slots  ●  POST  /appointments/book —  writes  a  conﬁrmed  booking  ●  POST  /whatsapp/send —  ﬁres  the  WhatsApp  conﬁrmation  message  
+Deployment:  Containerise  with  Docker  and  run  on  a  cloud  VM  (AWS  EC2,  GCP  Compute  
+Engine)
+ 
+or
+ 
+a
+ 
+managed
+ 
+container
+ 
+service
+ 
+(AWS
+ 
+ECS,
+ 
+Cloud
+ 
+Run).
+ 
+The
+ 
+WebSocket
+ 
+server
+ 
+needs
+ 
+a
+ 
+stable,
+ 
+low-latency
+ 
+connection
+ 
+—
+ 
+avoid
+ 
+serverless
+ 
+for
+ 
+the
+ 
+streaming
+ 
+audio
+ 
+path.
+ 
+Concurrency:  Use  a  job  queue  (BullMQ  or  Celery)  for  WhatsApp  delivery  and  any  async  
+operations.
+ 
+For
+ 
+slot
+ 
+locking,
+ 
+use
+ 
+Redis
+ SETNX with  a  TTL  to  prevent  double-bookings  during  
+the
+ 
+30-second
+ 
+conﬁrmation
+ 
+window.
+ 
+ 
+Recommended  tech  stack  to  start  Twilio  Voice   →   Node.js  /  FastAPI  backend   →   Deepgram  STT                           ↓                Claude  Agent  (function  calling)                      ↓            ↓               PostgreSQL      Redis  (slot  locks)                           ↓                Twilio  WhatsApp  API   →   Patient   
+Start  with  Twilio  for  both  voice  and  WhatsApp  —  it  keeps  everything  in  one  account,  simpliﬁes  
+billing,
+ 
+and
+ 
+their
+ 
+Node.js
+ 
+SDK
+ 
+is
+ 
+mature.
+ 
+Use
+ 
+Deepgram
+ 
+for
+ 
+STT
+ 
+(free
+ 
+tier
+ 
+covers
+ 
+early
+ 
+testing).
+ 
+Use
+ 
+Claude
+ 
+claude-sonnet-4-6
+ 
+as
+ 
+the
+ 
+agent
+ 
+with
+ 
+tool-use
+ 
+for
+ 
+all
+ 
+the
+ 
+booking
+ 
+logic.
+ 
+Then
+ 
+layer
+ 
+in
+ 
+EMR
+ 
+integration
+ 
+once
+ 
+the
+ 
+core
+ 
+ﬂow
+ 
+is
+ 
+working.
+ 
+--- Page 4 ---
+Want  me  to  sketch  out  the  agent's  system  prompt  and  tool  deﬁnitions,  or  the  database  
+schema
+ 
+for
+ 
+slots
+ 
+and
+ 
+bookings?
+ 
+ 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+How  the  function  will  work   
+For  the  AI  Receptionist  +  Voice  Agent  +  WhatsApp  Continuation  model,  I  would  design  it  
+like
+ 
+a
+ 
+modern
+ 
+healthcare
+ 
+SaaS
+ 
+platform
+ 
+rather
+ 
+than
+ 
+a
+ 
+traditional
+ 
+hospital
+ 
+management
+ 
+system.
+ 
+The  patient  experience  should  be:  
+Patient  Calls  Hospital  
+        ↓  
+AI  Receptionist  Answers  
+        ↓  
+Collect  Symptoms  
+        ↓  
+Find  Doctor  
+        ↓  
+"Available  options  sent  to  your  WhatsApp"  
+        ↓  
+Patient  Selects  Slot  
+        ↓  
+Appointment  Conﬁrmed  
+        ↓  
+Hospital  Dashboard  Updated  
+--- Page 5 ---
+ 
+ 
+1.  AI  Receptionist  Dashboard  (Hospital  Staﬀ)  
+This  is  the  screen  receptionists  and  administrators  see.  
+Dashboard  Home  
+------------------------------------------------------  
+ AI  Receptionist  Dashboard  
+------------------------------------------------------  
+ 
+Today's  Calls         245  
+Appointments  Booked    87  
+Transferred  to  Staﬀ   12  
+Missed  Calls            3  
+ 
+------------------------------------------------------  
+ Live  Calls  
+------------------------------------------------------  
+ 
+●  Caller:  +91  98XXXXXX21  
+Symptoms:  Chest  Pain  
+Suggested  Dept:  Cardiology  
+Status:  Selecting  Slot  
+--- Page 6 ---
+ 
+------------------------------------------------------  
+ 
+●  Caller:  +91  99XXXXXX34  
+Symptoms:  Skin  Allergy  
+Suggested  Dept:  Dermatology  
+Status:  Conﬁrmed  
+ 
+------------------------------------------------------  
+ 
+Analytics  Cards  
++----------------+----------------+  
+|  Calls  Today     |  Appointments    |  
+|  245             |  87              |  
++----------------+----------------+  
+ 
++----------------+----------------+  
+|  Avg  Duration    |  Conversion      |  
+|  3.2  min         |  72%             |  
++----------------+----------------+  
+ 
+ 
+--- Page 7 ---
+2.  Live  AI  Conversation  Monitor  
+This  is  useful  for  reception  managers.  
+------------------------------------------------------  
+Live  Conversation  
+------------------------------------------------------  
+ 
+AI:  
+Welcome  to  ABC  Hospital.  
+ 
+Patient:  
+I  have  severe  knee  pain.  
+ 
+AI:  
+How  long  have  you  experienced  this  pain?  
+ 
+Patient:  
+For  about  two  weeks.  
+ 
+AI:  
+I  recommend  an  Orthopedic  specialist.  
+ 
+Checking  availability...  
+ 
+--- Page 8 ---
+Available  options  have  been  sent  to  your  WhatsApp.  
+------------------------------------------------------  
+ 
+Staﬀ  can  intervene  if  needed.  
+[  Take  Over  Call  ]  
+ 
+ 
+3.  Doctor  Appointment  Tracking  Platform  
+This  becomes  the  operational  dashboard.  
+Appointment  Queue  
+---------------------------------------------------------  
+|  Time  |  Patient  |  Doctor  |  Department  |  Status  |  
+---------------------------------------------------------  
+|  10AM  |  Ravi     |  Dr  Rao  |  Cardiology  |  Conﬁrmed  |  
+|  11AM  |  Priya    |  Dr  Shah|  Dermatology|  Checked  In|  
+|  12PM  |  Karthik  |  Dr  Das  |  Orthopedic  |  Waiting    |  
+---------------------------------------------------------  
+ 
+Filters  
+Today  
+Tomorrow  
+This  Week  
+--- Page 9 ---
+ 
+Cardiology  
+Dermatology  
+Orthopedics  
+ENT  
+ 
+Conﬁrmed  
+Cancelled  
+No  Show  
+ 
+ 
+Doctor  Schedule  View  
+Dr.  Rajesh  Kumar  
+Orthopedics  
+ 
+09:00  AM   Booked  
+09:30  AM   Booked  
+10:00  AM   Available  
+10:30  AM   Available  
+11:00  AM   Booked  
+ 
+Calendar  style  view:  
+-------------------------------------------------  
+--- Page 10 ---
+MON   TUE   WED   THU   FRI  
+-------------------------------------------------  
+ 
+09:00  Ravi  
+09:30  Priya  
+10:00  Available  
+10:30  Available  
+11:00  Kumar  
+ 
+ 
+4.  WhatsApp  Experience  
+This  is  where  the  magic  happens.  
+After  AI  identiﬁes  the  doctor:  
+Message  1  
+ABC  Hospital  
+ 
+We  found  available  doctors  for  your  symptoms.  
+ 
+1.  Dr  Rajesh  Kumar  
+Orthopedic  Specialist  
+ 
+2.  Dr  Anitha  Rao  
+--- Page 11 ---
+Orthopedic  Specialist  
+ 
+Choose  a  doctor  below.  
+ 
+Buttons:  
+[  Dr  Rajesh  ]  
+[  Dr  Anitha  ]  
+ 
+ 
+Message  2  
+After  selecting  doctor:  
+Available  slots  for  
+Dr  Rajesh  Kumar  
+ 
+Today  
+4:00  PM  
+5:00  PM  
+ 
+Tomorrow  
+10:00  AM  
+11:00  AM  
+ 
+Buttons:  
+--- Page 12 ---
+[4  PM]  
+[5  PM]  
+[10  AM]  
+[11  AM]  
+ 
+ 
+Conﬁrmation  Message  
+✅  Appointment  Conﬁrmed  
+ 
+Patient:  
+Ravi  Kumar  
+ 
+Doctor:  
+Dr  Rajesh  Kumar  
+ 
+Department:  
+Orthopedics  
+ 
+Date:  
+25  July  2025  
+ 
+Time:  
+5:00  PM  
+--- Page 13 ---
+ 
+Location:  
+ABC  Hospital  
+3rd  Floor  
+Orthopedic  Wing  
+ 
+Booking  ID:  
+APT-25871  
+ 
+Buttons:  
+[Reschedule]  
+[Cancel]  
+[Directions]  
+ 
+ 
+5.  AI  Receptionist  Control  Center  
+Hospital  Admin  controls  the  AI.  
+AI  Settings  
+Voice  Language  
+ 
+☑  English  
+☑  Tamil  
+--- Page 14 ---
+☑  Hindi  
+☐  Telugu  
+☐  Kannada  
+ 
+Voice  Gender  
+ 
+☑  Female  
+☐  Male  
+ 
+ 
+Knowledge  Base  
+Upload:  
+Doctor  Proﬁles  
+Hospital  Policies  
+Insurance  Information  
+Departments  
+Consultation  Fees  
+FAQ  
+ 
+The  AI  automatically  learns  from  these.  
+ 
+6.  Executive  Dashboard  (Management)  
+--- Page 15 ---
+Hospital  owners  will  love  this.  
+Booking  Funnel  
+Calls  Received  
+245  
+ 
+AI  Conversations  
+232  
+ 
+Doctor  Matches  
+201  
+ 
+WhatsApp  Sent  
+198  
+ 
+Bookings  Conﬁrmed  
+87  
+ 
+Conversion:  
+35%  
+ 
+ 
+Popular  Departments  
+Cardiology       32%  
+--- Page 16 ---
+Orthopedics      27%  
+Dermatology      18%  
+ENT              12%  
+Others           11%  
+ 
+ 
+Recommended  UI  Layout  
+┌─────────────────────────────────────────────┐  
+│  AI  Receptionist  Dashboard                    │  
+├─────────────────────────────────────────────┤  
+│  Calls  │  Appointments  │  Revenue  │  Conversion  │  
+├─────────────────────────────────────────────┤  
+│                                              │  
+│  Live  Calls           Today's  Appointments     │  
+│                                              │  
+├─────────────────────────────────────────────┤  
+│  Doctor  Schedule       Appointment  Tracking    │  
+├─────────────────────────────────────────────┤  
+│  AI  Conversation  Monitor                      │  
+└─────────────────────────────────────────────┘  
+ 
+Suggested  Technology  Stack  
+--- Page 17 ---
+Frontend  
+●  React  +  Next.js  ●  Tailwind  CSS  ●  ShadCN  UI  ●  Recharts  
+Backend  
+●  Node.js  +  NestJS  ●  PostgreSQL  ●  Redis  
+AI  
+●  GPT-4o  Realtime  or  Claude  Sonnet  ●  Deepgram  STT  ●  ElevenLabs  TTS  
+Communication  
+●  Twilio  Voice  ●  WhatsApp  Business  API  (Twilio  or  360dialog)  
+ 
+ 
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259710340.pdf (9 pages) ===
+========================================
+
+--- Page 1 ---
+
+--- Page 2 ---
+
+--- Page 3 ---
+
+--- Page 4 ---
+
+--- Page 5 ---
+
+--- Page 6 ---
+
+--- Page 7 ---
+
+--- Page 8 ---
+
+--- Page 9 ---
+
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259710388.pdf (11 pages) ===
+========================================
+
+--- Page 1 ---
+Batch Planner Challenges & Solutions
+Challenge 1 — Daily Transfer Limit Exceeded
+Problem
+Solution
+Retrieve the available daily transfer limit.
+Compare the remaining payout amount with the bank limit.
+Generate batches only within the permitted limit.
+Move remaining settlements to the next payout schedule.
+Challenge 2 — Incorrect Batch Amount Calculation
+Problem
+Every business bank account has a maximum daily transfer limit.
+Example
+Daily Bank Limit
+AUD 50,000
+Today's Pending Payout
+AUD 82,000
+Creating a payout batch exceeding the daily limit will result in rejected or blocked 
+transfers.
+Before generating any batch, the Batch Planner should:
+The planner incorrectly calculates the total amount of a batch.
+Example
+Doctor A
+AUD 20,000
+Doctor B
+--- Page 2 ---
+Solution
+Close the current batch.
+Create a new batch.
+Continue planning.
+Challenge 3 — Duplicate Settlement Assignment
+Problem
+Duplicate payouts
+Financial loss
+Audit failures
+Solution
+Settlement has not already been assigned.
+AUD 18,000
+Doctor C
+AUD 15,000
+----------------
+Batch Total
+AUD 53,000
+If the bank limit is AUD 50,000, this batch becomes invalid.
+The planner should maintain a running total while creating the batch.
+Before adding each settlement:
+Current Batch Total
++
+Next Settlement Amount
+If the result exceeds the configured limit,
+The same settlement is accidentally assigned to multiple batches.
+Result:
+Before adding a settlement into a batch, verify:
+--- Page 3 ---
+Settlement Batch ID is empty.
+Settlement Status is READY_FOR_PAYOUT.
+Challenge 4 — Multiple Batch Planners Running
+Problem
+Solution
+Challenge 5 — Very Small Batch Creation
+Problem
+Solution
+Merge with the next eligible batch.
+Or wait until the next payout cycle.
+Challenge 6 — Single Settlement Exceeds Bank Limit
+Problem
+Two scheduler instances start simultaneously.
+Both planners create batches from the same settlements.
+Result:
+Duplicate payout batches.
+Implement a Planner Lock.
+Only one Batch Planner instance should be allowed to create payout batches at any 
+given time.
+The planner generates extremely small payout batches.
+Example
+Batch Total
+AUD 250
+Processing very small batches increases operational overhead.
+Configure a minimum batch amount.
+If the batch does not reach the configured threshold,
+--- Page 4 ---
+Solution
+Challenge 7 — Priority-Based Processing
+Problem
+Solution
+One doctor's payout exceeds the bank's maximum transfer amount.
+Example
+Doctor Settlement
+AUD 60,000
+Bank Limit
+AUD 50,000
+Mark the settlement for manual review or process according to business rules.
+Example
+Status
+MANUAL_REVIEW
+The planner should never automatically create an invalid batch.
+Emergency or high-priority doctors are processed after normal payouts.
+Sort settlements before batch creation.
+Example
+Priority Order
+Emergency
+↓
+Premium
+↓
+Standard
+--- Page 5 ---
+Challenge 8 — Insufficient Hospital Balance
+Problem
+Solution
+Stop payout planning.
+Notify Finance Team.
+Resume after funds become available.
+Challenge 9 — Hardcoded Batch Size
+Problem
+↓
+Oldest Settlement
+Priority-based sorting ensures important payouts are processed first.
+Hospital Account Balance
+AUD 30,000
+Planner creates
+AUD 45,000
+batch.
+Transfers fail.
+Before planning batches,
+validate the available payout balance.
+If balance is insufficient,
+Batch Size
+10 Doctors
+Business later changes requirement to
+20 Doctors
+--- Page 6 ---
+Solution
+Challenge 10 — Planner Crash
+Problem
+Solution
+Challenge 11 — Mixed Currency
+Problem
+Application requires code modification.
+Keep batch configuration dynamic.
+Configuration Example
+Maximum Doctors Per Batch
+10
+Maximum Batch Amount
+AUD 50,000
+No code changes required.
+Planner creates Batch 001.
+Server crashes before processing.
+Batch information is lost.
+Immediately persist every generated batch into the database.
+Never keep batch information only in application memory.
+Planner creates one batch containing
+AUD
+USD
+EUR
+Transfers become invalid.
+--- Page 7 ---
+Solution
+Challenge 12 — Already Paid Settlement
+Problem
+Solution
+Challenge 13 — Refund Requested
+Problem
+Solution
+Challenge 14 — Batch Timeout
+Problem
+Group settlements by currency before planning batches.
+Each batch should contain only one supported currency.
+Planner accidentally includes
+PAID
+settlements.
+Result:
+Duplicate payout.
+Planner should retrieve only settlements with
+READY_FOR_PAYOUT
+status.
+A patient refund is approved before payout execution.
+Planner still includes that settlement.
+Validate settlement status before planning.
+If settlement is under refund review,
+Skip Settlement
+until the refund process completes.
+--- Page 8 ---
+Solution
+Reset the batch.
+Return it to the queue.
+Restart processing.
+5. Enterprise Batch Planning Workflow
+Planner creates a batch.
+Processor never starts.
+Batch remains in
+PROCESSING
+forever.
+Implement timeout monitoring.
+If processing exceeds the configured timeout,
+Settlement Engine
+        │
+        ▼
+READY_FOR_PAYOUT
+        │
+        ▼
+Acquire Planner Lock
+        │
+        ▼
+Retrieve Eligible Settlements
+        │
+        ▼
+Validate Settlement Status
+        │
+        ▼
+Validate Hospital Balance
+        │
+        ▼
+Validate Daily Transfer Limit
+        │
+        ▼
+Group by Currency
+--- Page 9 ---
+6. Enterprise Solution Summary
+        │
+        ▼
+Sort by Priority
+        │
+        ▼
+Calculate Running Batch Amount
+        │
+        ▼
+Generate Batch
+        │
+        ▼
+Store Batch
+        │
+        ▼
+Send to Batch Queue
+Challeng
+e
+Recomm
+ended 
+Solution
+Daily 
+Transfer 
+Limit 
+Exceeded
+Daily Limit 
+Validation
+Incorrect 
+Batch 
+Amount
+Running 
+Total 
+Validation
+Duplicate 
+Settlemen
+t 
+Assignme
+nt
+Settlemen
+t 
+Validation
+--- Page 10 ---
+Multiple 
+Batch 
+Planners
+Planner 
+Lock / 
+Distribute
+d Lock
+Very 
+Small 
+Batch
+Minimum 
+Batch 
+Threshold
+Settlemen
+t Exceeds 
+Bank Limit
+Manual 
+Review
+Priority 
+Processin
+g
+Priority 
+Sorting
+Insufficien
+t Hospital 
+Balance
+Balance 
+Validation
+Hardcode
+d Batch 
+Size
+Configura
+ble Batch 
+Rules
+Planner 
+Crash
+Persistent 
+Batch 
+Storage
+Mixed 
+Currency
+Currency-
+Based 
+Batching
+Already 
+Paid 
+Settlemen
+t Status 
+Validation
+--- Page 11 ---
+Settlemen
+t
+Refund 
+Requeste
+d
+Refund 
+Validation
+Batch 
+Timeout
+Timeout 
+Monitoring 
+& 
+Recovery
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259710389.pdf (5 pages) ===
+========================================
+
+--- Page 1 ---
+Doctor	App	—	Design	Assets
+Color,	typography,	spacing	&	component	reference	for	QA
+Reference	guide:
+	Colors,	typography,	spacing	and	component	sizes	for	the	doctor-facing	app,	for
+use	during	QA.	Treat	this	as	a	general	reference	—	for	pixel-critical	checks,	cross-check	the	exact
+value	in	Figma's	Inspect	panel.
+COLOR	PALETTE
+Primary	/	Brand
+#311B92
+Header	banner,	primary
+buttons,	active	icons
+Progress	Gradient
+#6EE7B7	→	#34D399
+Progress	bars,	online	status
+dot
+Success
+#15A06A	on	#E2F4EC
+Completed	/	positive	badges
+Warning	/	Pending
+#C77A1E	on	#FBEEDB
+"In	25	min",	upcoming-time
+badges
+Error	/	Alert
+#EF5350
+Notification	dot,	destructive
+states
+App	Background
+#EEF3F5
+Screen	base	background
+Surface
+#FFFFFF
+Cards,	sheets,	nav	bar
+Icon	Container
+#E2F1F4
+Default	icon	chip
+background
+Border	/	Divider
+#DCDEEC
+Card	outlines,	dividers
+Text	—	Primary
+#34505B
+Headings,	big	numbers,
+icons
+Text	—	Secondary
+#78828A
+Labels,	captions,	meta	text
+Text	—	On	Primary
+#C9C2E8
+Secondary	text	on	purple
+banner
+EXTENDED	/	SCREEN-SPECIFIC	COLORS
+--- Page 2 ---
+Teal	Accent
+#0D5C75
+Payment	screen	secondary
+button/icon
+Mint	(Call	Status)
+#006F64	on	#D4FCF6
+"Completed"	call	badge
+(Total	Calls)
+Processing	/	Neutral
+#6B6B6B	on	#EAEAEA
+"Processing"	transaction
+status
+Error	—	Soft
+#E5525A	on	#FBE7E7
+"Missed"/"Cancelled"/"Failed"
+badges
+Error	—	Strong
+#BA1A1A
+"Delete	Account",
+destructive	text/icon
+Neutral	Chip	Fill
+#DCDEEC
+Icon	chip	bg	on	list	rows
+(Profile,	Settings)
+Range	Select	(mid)
+#E4E1F5
+In-range	calendar	days
+Toggle	—	Off
+#BFC8CD
+Switch	track,	disabled	state
+Avatar	—	Peach
+#EFD0BA
+Initials	chip	background	(e.g.
+"SA")
+Avatar	—	Blue
+#C6DAE9
+Initials	chip	background	(e.g.
+"MU")
+Avatar	—	Lavender
+#CCC1E5
+Initials	chip	background	(e.g.
+"EP"),	rotates	with	the	above
+The	soft-error	and	status-mint	colors	are	used	inconsistently	across	screens	(Reports	vs	Total	Calls
+use	two	different	"success/error"	pairs	for	what	is	functionally	the	same	state)	—	worth	flagging	to	the
+tester	as	a	possible	consistency	gap	rather	than	an	intentional	variant.
+TYPOGRAPHY
+Dashboard
+Screen	Title
+~28px	/	800
+Dr.	Deepika	S
+Card	Heading
+~22px	/	800
+--- Page 3 ---
+24
+Stat	Number
+~30px	/	800
+Total	Calls
+Stat	Label	/	Body	Bold
+~16px	/	700
+Welcome	back,	—	subtitle	copy
+Body	/	Subtitle
+~15px	/	400
+TODAY	·	IN	25	MIN
+Caption	/	Badge
+~12–13px	/	700
+Typeface:	
+Inter
+,	weights	400–800.
+SPACING	SCALE	(4PX	BASE	GRID)
+4
+8
+12
+16	—	card
+gutter
+20	—	screen
+m argin
+24
+32	—	section
+gap
+SIZING	&	COMPONENTS
+Screen	Layout
+Screen	margin
+20px
+Grid	gutter
+16px
+2-col	stat
+card	width
+~168px
+(of	392
+frame)
+Icon	Chip
+Size
+40	×	40px
+Corner	radius
+12px
+Cards
+Stat	card	radius
+20px
+Hero	banner	radius
+28px
+Border
+1px	solid	#DCDEEC
+Buttons	/	Pills
+Primary	button	height
+~52px
+Primary	button	radius
+14px
+Badge	/	pill
+radius
+full
+(999px)
+
+75%
+In	25	min
+View	Details
+12
+Total	Calls
+BUTTONS
+--- Page 4 ---
+Save
+Reschedule
+Log	Out
+Incoming
+All	Calls
+Primary	(filled)
+Fill
+#311B92
+Radius
+14px
+Height
+~52px
+Secondary	(outline)
+Border
+1. 5px	#311B92
+Text
+#311B92
+Ghost	/	text
+Used	for
+Log	Out
+Destructive	text
+#BA1A1A
+Segmented	pill	(tabs)
+Active
+#311B92	fill,	white
+text
+Inactive
+white/transparent,
+outline
+FORM	&	INPUT	CONTROLS
+
+	Search	patients
+09:00	AM	
+
+On
+Off
+Text	/	Search	Input
+Border
+1px	#DCDEEC
+Radius
+14px
+Fill
+#FFFFFF
+Time	/	Date	Field
+Fill
+#EEF3F5
+Radius
+12px
+Trailing	icon
+clock/calendar
+Toggle	Switch
+Track	(on)
+#311B92
+Track	(off)
+#BFC8CD
+Thumb
+#FFFFFF,	22px
+STATUS	BADGES	/	PILLS
+Completed
+Completed	(calls)
+Processing
+Upcoming	/	Rescheduled
+Upcoming
+Missed	/	Cancelled	/	Failed
+●	LIVE
+CARDS,	LISTS	&	CONTAINERS
+List	Row	(settings/menu)
+Icon
+chip
+40px,	radius	12px,
+#DCDEEC
+Divider
+1px	#EEF3F5
+Trailing
+chevron	›
+Info	/	Callout	Banner
+Neutral
+#E9ECEF	bg,	(i)
+icon
+Success
+#D7F3E9	bg,	check
+icon
+Primary
+(dark)
+#311B92	bg,
+white	text
+Diagnosis	Callout
+Fill
+#F1EFFA
+Left	border
+4px	#311B92
+--- Page 5 ---
+Avatar
+Initials
+chip
+56px,	radius
+16px
+Photo
+circular,	56–96px
+Calendar
+Selected
+day
+#311B92	fill,
+white	text
+In-range	day
+#E4E1F5	fill
+Default
+day
+transparent,	dark
+text
+Tag	/	Chip	(label)
+e.g.
+MED-9921,	English,
+Tamil
+Fill
+#DCDEEC,	radius	full
+SCREENS	COVERED
+Dashboard	·	Bookings	List	·	Video	Call	Booking	·	Bookings	Calendar	·	Schedule	·	Edit	Schedule	·	Reports	·
+Appointment	Details	·	Consultation	Summary	·	Payment	·	Profile	·	Profile	Visibility	·	Settings	·	Total	Calls
+
+========================================
+=== C:/Users/aakas/.gemini/antigravity/brain/4e951c2f-b35a-4d8a-8801-075ee82c0fc7/.user_uploaded\media__1786259710408.pdf (30 pages) ===
+========================================
+
+--- Page 1 ---
+F U N C T I O N A L  S P E C I F I C A T I O N  ·  P R O D U C T  P R O P O S A L
+Multi-Speciality Hospital
+Super Admin Panel
+A centralized management and monitoring system unifying the Doctor
+App, Patient App, IVR, Online Consultation, AI Scribe, and Payment
+systems into one role-aware administrative platform.
+Document: Functional Specification
+Prepared for: Hospital Management & Stakeholder Review
+Date: August 04, 2026
+Status: For Review & Discussion
+Doctor App Patient App IVR Online Consultation
+AI Scribe Payments
+--- Page 2 ---
+Table of Contents
+Multi-Speciality Hospital — Super Admin Panel Functional Specification
+01 Executive Overview 4
+02 Overall Hospital System Architecture 5
+03 Super Admin Dashboard 6
+04 Today's Appointment Overview 7
+05 Revenue Overview 8
+06 Department Performance 9
+07 Doctor Overview 10
+08 IVR & Communication Overview 11
+09 Online Consultation Overview 12
+10 AI Scribe Overview 13
+11 Payment Overview 14
+12 Alerts & Notifications 15
+13 System Status 16
+14 Doctors – Full Functional Specification 17
+15 Patients – Full Functional Specification 18
+16 Departments – Full Functional Specification 19
+17 Appointments – Full Functional Specification 20
+18 Staff & Admin Management 21
+19 Roles & Permissions 22
+20 Reports & Analytics 23
+21 Notifications Management 24
+22 Hospital Settings 25
+23 Audit Logs 26
+Confidential –Prepared for Internal Review Page 2 of 30
+--- Page 3 ---
+24 Final Admin Panel Navigation 27
+25 Recommended Dashboard Wireframe 28
+26 Key Product Principle 29
+27 Final Summary 30
+Confidential –Prepared for Internal Review Page 3 of 30
+--- Page 4 ---
+INTRODUCTION
+1. Executive Overview
+The Super Admin Panel is proposed as the single, centralized management and monitoring system for the
+multi-speciality hospital. It brings together the Doctor App, Patient App, IVR system, Online Consultation
+platform, AI Scribe service, and Payment infrastructure into one coherent control layer — giving hospital
+leadership a real-time, end-to-end view of clinical and operational activity.
+Rather than requiring administrators to log into separate systems for appointments, billing, doctor management, and
+communication, the Super Admin Panel consolidates everything into a single, role-aware interface. This reduces
+operational overhead, improves visibility, and strengthens governance across the hospital.
+What the Super Admin Can Manage and Monitor
+Doctors Patients
+Departments Appointments
+IVR & Calls Online Consultations
+AI Scribe Payments
+Revenue Staff / Admins
+Roles & Permissions Reports & Analytics
+Notifications Hospital Settings
+System Health Audit Logs
+Core Principle: The Super Admin has full administrative access across every module of the
+platform, while all other staff users — receptionists, billing staff, department admins, and doctors
+— receive access strictly based on their assigned role. This ensures both operational flexibility for
+the hospital and strong data governance for sensitive clinical and financial information. 
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 4 of 30
+--- Page 5 ---
+SYSTEM DESIGN
+2. Overall Hospital System Architecture
+The diagram below illustrates how the Super Admin Panel sits above the Hospital Backend, which in turn
+coordinates the Doctor App, Patient App, and the Admin Panel itself, along with the shared services that
+power the platform.
+SUPER ADMIN PANEL
+manages & monitors
+HOSPITAL BACKEND
+central data & business logic layer
+DOCTOR APP
+AI Scribe
+Consultation Workspace
+Video Call
+Doctor Profile & Data
+Appointment Queue
+PATIENT APP
+Appointments
+Payments
+Medical Data
+Notifications
+Consultation History
+ADMIN PANEL
+Dashboard & Analytics
+Staff & Role Management
+Reports & Audit Logs
+Hospital Settings
+System Health Monitoring
+IVR Payment Gateway Video Consultation AI Scribe
+Notifications Database
+All three applications communicate through the Hospital Backend, ensuring a single source of truth for patient
+records, appointments, payments, and clinical activity. Shared services — IVR, the payment gateway, video
+consultation, AI Scribe, notifications, and the central database — are consumed consistently across all applications,
+avoiding duplication and data mismatches.
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 5 of 30
+--- Page 6 ---
+COMMAND CENTER
+3. Super Admin Dashboard
+The dashboard is designed as a hospital-wide overview that a Super Admin can absorb within 10–20
+seconds of logging in — surfacing what matters most, and letting every card act as an entry point into
+deeper detail.
+Top KPI Cards — Row 1
+Total Patients
+The complete count of
+registered patients across
+the hospital.
+→ Opens Patients module
+Total Doctors
+The complete count of
+active doctors across all
+departments.
+→ Opens Doctors module
+Today's Appointments
+All appointments scheduled
+for the current day, across
+every department.
+→ Opens Appointments
+module
+Today's Revenue
+Total revenue collected so
+far today across online and
+offline payments.
+→ Opens Revenue
+Overview
+Top KPI Cards — Row 2
+Online Consultations
+Number of video/online
+consultations happening or
+completed today.
+→ Opens Online
+Consultation module
+IVR Calls
+Total inbound and outbound
+calls handled by the IVR
+system today.
+→ Opens IVR & Calls
+module
+AI Scribe Sessions
+Number of AI Scribe
+transcription sessions
+generated today.
+→ Opens AI Scribe module
+Pending Payments
+Payments that are due or
+awaiting confirmation.
+→ Opens Payments module
+Design intent: Each KPI card shows a single, meaningful number at a glance. Tapping or clicking any card takes the
+Super Admin directly into the relevant module for full detail — the dashboard itself never becomes a place to dig
+through raw data.
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 6 of 30
+--- Page 7 ---
+OPERATIONS SNAPSHOT
+4. Today's Appointment Overview
+A single view of how today's appointments are distributed across the entire lifecycle, from confirmation
+through to completion.
+Status Example Count
+Total Appointments 137 example
+Confirmed 38
+Waiting 18
+In Progress 9
+Completed 61
+Cancelled 7
+No Show 4
+ConfirmedWaiting In
+Progress
+CompletedCancelled No
+Show
+Illustrative bar chart — recommended visualization is a donut or bar
+chart on the live dashboard.
+Clicking anywhere on this overview opens the full Appointment Management page, where the Super Admin can
+search, filter, and act on individual appointments.
+38
+18
+9
+61
+7 4
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 7 of 30
+--- Page 8 ---
+FINANCIAL SNAPSHOT
+5. Revenue Overview
+Revenue is one of the most frequently checked metrics by hospital leadership. This module gives a clear,
+filterable view of money flowing through the system.
+Metric Example Value
+Today's Revenue ₹2,84,500 example
+Weekly Revenue ₹18,64,200 example
+Monthly Revenue ₹76,40,900 example
+Yearly Revenue ₹8,92,10,000 example
+Online Payments ₹1,96,000 example
+Offline Payments ₹88,500 example
+Refunds ₹12,400 example
+Pending Payments ₹34,900 example
+Recommended Filters
+Today 7 Days 30 Days 12 Months
+Revenue Trend (Illustrative)
+Today 7 Days 30 Days 12 Months
+Recommended visualization: a line or bar revenue-trend chart, filterable by the periods above.
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 8 of 30
+--- Page 9 ---
+OPERATIONAL INSIGHT
+6. Department Performance
+Department-level performance helps hospital leadership understand where patient volume and revenue are
+concentrated, and where attention may be needed.
+Department Appointments (Example) Revenue (Example)
+Cardiology 412 ₹9,84,000
+Neurology 301 ₹7,42,500
+Orthopedics 358 ₹6,95,200
+Pediatrics 276 ₹3,88,900
+Dermatology 244 ₹3,10,600
+The dashboard shows the top 5 departments by default, with a “View All” option that opens the complete
+department-wise breakdown.
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 9 of 30
+--- Page 10 ---
+WORKFORCE SNAPSHOT
+7. Doctor Overview
+A quick operational summary of doctor availability and activity across the hospital.
+Active Doctors
+Doctors currently enabled
+and available in the system.
+→ Opens Doctors module
+Available Now
+Doctors currently within their
+scheduled availability
+window.
+→ Opens Doctor
+Availability
+Online Consultation
+Doctors
+Doctors enabled for video/
+online consultations.
+→ Opens Online
+Consultation
+Doctors on Leave
+Doctors marked unavailable
+for the current day.
+→ Opens Doctor Schedule
+Optional Operational Information
+Doctor-wise consultation count
+Doctor-wise appointment count
+Important note: This section should not be presented as a clinical-performance ranking. It is intended purely as
+operational visibility, unless the hospital specifically requests clinical-performance analytics as a separate,
+deliberately scoped feature.
+• 
+• 
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 10 of 30
+--- Page 11 ---
+COMMUNICATION CHANNEL
+8. IVR & Communication Overview
+The IVR module gives visibility into call-based patient interactions — a channel that remains important for
+appointment booking and reminders, particularly for patients less comfortable with the mobile app.
+Metric Example Value
+Total IVR Calls 842 example
+Incoming Calls 560
+Outgoing Calls 282
+Answered 731
+Missed 77
+Failed 34
+Average Call Duration 2m 14s
+Appointment Bookings via IVR 96
+Reminder Calls 410
+Language-wise Distribution English, Hindi, Tamil, Telugu …
+Call recordings are sensitive by nature and should be protected through appropriate role-based permissions and the
+hospital's data-privacy policy — access should be limited strictly to authorized personnel.
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 11 of 30
+--- Page 12 ---
+TELEHEALTH
+9. Online Consultation Overview
+This module tracks the health of the online/video consultation channel, keeping the Appointment →
+Consultation relationship intact throughout.
+Metric Example Value
+Total Online Consultations 219 example
+Ongoing 6
+Completed 187
+Cancelled 14
+Failed 5
+No Show 7
+Average Consultation Duration 11m 40s
+Consultations are also viewable doctor-wise and department-wise for operational tracking.
+Appointment → Consultation
+The Super Admin's role here is to monitor operational status — call quality, completion rates, technical failures —
+rather than to interfere with the clinical interaction between doctor and patient.
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 12 of 30
+--- Page 13 ---
+AI-ASSISTED DOCUMENTATION
+10. AI Scribe Overview
+The AI Scribe module automatically documents consultations, and this overview lets the Super Admin track
+adoption and service reliability across the hospital.
+Metric Example Value
+Total Scribe Sessions 163 example
+Transcriptions Generated 158
+SOAP Notes Generated 151
+Processing Success 151
+Processing Failures 7
+Average Processing Time 38 seconds
+Usage can also be viewed doctor-wise and date-wise, for example:
+EXAMPLE
+Dr. Arun → 24 Scribe Sessions Today example
+The Super Admin primarily monitors system usage and AI service health — not the clinical content of the notes
+themselves.
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 13 of 30
+--- Page 14 ---
+FINANCIAL OPERATIONS
+11. Payment Overview
+A consolidated, transaction-level view of all payments moving through the platform, built for both daily
+operations and financial reconciliation.
+Field Description
+Payment ID Unique identifier for each transaction
+Patient Patient associated with the payment
+Appointment Linked appointment record
+Doctor Doctor associated with the consultation
+Amount Transaction value
+Payment Method UPI / Card / Cash / Other
+Status Paid / Pending / Failed / Refunded
+Channel Online / Offline
+Transaction Date Date and time of payment
+Additional capabilities: refund management and payment reconciliation across online and offline channels.
+Payment Method Breakdown (Illustrative)
+UPI —
+46%
+Card —
+28%
+Cash —
+18%
+Other —
+8%
+Recommended visualization: a donut chart summarizing payment method distribution.
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 14 of 30
+--- Page 15 ---
+EXCEPTION HANDLING
+12. Alerts & Notifications
+The dashboard surfaces only alerts that require action — keeping the Super Admin focused on real issues
+rather than routine noise.
+⚠ Pending payments above threshold
+⚠ Failed AI Scribe sessions
+⚠ Payment service unavailable
+⚠ IVR failures
+⚠ Video consultation failures
+⚠ Doctors with scheduling conflicts
+⚠ High appointment cancellation rate
+Guiding principle: Only actionable alerts appear on the main dashboard. Informational or routine
+events remain inside their respective modules, so the dashboard never becomes cluttered with
+unnecessary notifications.
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 15 of 30
+--- Page 16 ---
+TECHNICAL HEALTH
+13. System Status
+A high-level, non-technical view of platform health — enough for a Super Admin to know whether everything
+is running normally, without needing DevOps-level detail.
+Service Status
+Backend API ● Operational
+Database ● Operational
+Doctor App API ● Operational
+Patient App API ● Operational
+IVR ● Operational
+Video Consultation ● Operational
+AI Scribe ● Operational
+Payment Service ● Operational
+Notification Service ● Operational
+Also Monitored
+API errors
+Service downtime
+Failed requests
+AI processing failures
+Payment failures
+IVR failures
+Detailed technical configuration, logs, and infrastructure controls remain under DevOps ownership — the Super
+Admin Panel surfaces only the operational summary needed for oversight.
+• 
+• 
+• 
+• 
+• 
+• 
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 16 of 30
+--- Page 17 ---
+MODULE SPECIFICATION
+14. Doctors – Full Functional Specification
+Complete control over doctor onboarding, profile management, and consultation configuration.
+Add new doctor
+Edit doctor profile
+Manage specialization
+Department assignment
+Qualification & credentials
+Experience details
+Consultation fee configuration
+Available days / time slots
+Enable / disable online consultation
+Activate / deactivate doctor
+Create & manage doctor login
+View doctor's appointments
+View consultation statistics
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 17 of 30
+--- Page 18 ---
+MODULE SPECIFICATION
+15. Patients – Full Functional Specification
+Comprehensive patient record management, with strict controls over sensitive information.
+Add patient
+Edit patient details
+Patient ID management
+Contact details
+Date of birth
+Gender
+Emergency contact
+Activate / deactivate patient account
+View appointment history
+View consultation history
+View payment history
+Search & filter patients
+Important: Medical records must be protected using role-based access control and appropriate privacy and security
+policies. Not every staff role should be able to view full clinical history.
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 18 of 30
+--- Page 19 ---
+MODULE SPECIFICATION
+16. Departments – Full Functional Specification
+Add department
+Department name
+Description
+Assign department head
+Assign doctors
+Department working hours
+Default consultation fee / settings
+Activate / deactivate department
+View department appointments
+View department revenue
+View department patient count
+EXAMPLE
+Cardiology → Dr. Arun, Dr. Priya example
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 19 of 30
+--- Page 20 ---
+MODULE SPECIFICATION
+17. Appointments – Full Functional Specification
+View all appointments
+Create appointment
+Assign doctor
+Assign department
+Reschedule appointment
+Cancel appointment
+Confirm / reject appointment
+Track appointment status
+Online / offline appointment type
+View today's appointments
+View upcoming appointments
+Search & filter
+No-show tracking
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 20 of 30
+--- Page 21 ---
+PEOPLE & ACCESS
+18. Staff & Admin Management
+The Super Admin can create and manage all non-clinical and administrative staff accounts.
+Roles the Super Admin Can Create
+Hospital Admin Receptionist
+Billing Staff Department Admin
+Other Custom Staff Roles
+Fields Captured Per Staff Member
+Name
+Contact
+Email
+Employee ID
+Department
+Role
+Login account
+Active / inactive status
+Reset / deactivate access
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 21 of 30
+--- Page 22 ---
+ACCESS CONTROL
+19. Roles & Permissions
+The platform is built on Role-Based Access Control (RBAC) — every user sees and can act on only what
+their role permits.
+Doctor
+✓ Appointments
+✓ Consultations
+✓ AI Scribe
+✗ Revenue
+✗ System Settings
+Receptionist
+✓ Patients
+✓ Appointments
+✗ Revenue Reports
+✗ Role Management
+Billing Staff
+✓ Payments
+✓ Revenue
+✗ Clinical Records
+Super Admin
+✓ Full Access Across All Modules
+Governance principle: Not every staff member should receive Super Admin access. Roles should
+be assigned based strictly on job responsibility, keeping the system secure and auditable.
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 22 of 30
+--- Page 23 ---
+BUSINESS INTELLIGENCE
+20. Reports & Analytics
+Structured, exportable reporting across every operational area of the hospital.
+Patient Reports
+Doctor Reports
+Appointment Reports
+Consultation Reports
+IVR Reports
+Video Consultation Reports
+AI Scribe Reports
+Payment Reports
+Revenue Reports
+Department Reports
+Cancellation Reports
+No-show Reports
+Filters
+Today Week Month Year
+Custom Date
+Export Formats
+PDF Excel CSV
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 23 of 30
+--- Page 24 ---
+COMMUNICATION
+21. Notifications Management
+Centralized configuration of every automated communication sent to doctors and patients.
+Notification Types
+Appointment notifications
+Appointment reminders
+Payment notifications
+Cancellation notifications
+Doctor notifications
+Patient notifications
+Supported Channels
+SMS WhatsApp Push Notifications Email
+Notification Templates
+EXAMPLE — APPOINTMENT REMINDER
+“Your appointment with Dr. {{doctor}} is scheduled for {{date}} at {{time}}.” example
+• 
+• 
+• 
+• 
+• 
+• 
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 24 of 30
+--- Page 25 ---
+CONFIGURATION
+22. Hospital Settings
+Foundational configuration that governs how the hospital operates across every module.
+Hospital name
+Logo
+Address
+Contact details
+Working hours
+Holidays
+Department configuration
+Appointment slot duration
+Consultation settings
+Default consultation fees
+Payment configuration
+Notification configuration
+IVR configuration
+Supported languages
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+• 
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 25 of 30
+--- Page 26 ---
+GOVERNANCE
+23. Audit Logs
+Every significant administrative action is recorded, creating a complete, traceable history of who did what,
+when, and where.
+Who What When Module
+Super Admin Added Doctor 04 Aug 2026, 09:12 example Doctors
+Admin Cancelled Appointment 04 Aug 2026, 10:45 example Appointments
+Billing Staff Refunded Payment 04 Aug 2026, 11:20 example Payments
+Super Admin Changed Role 04 Aug 2026, 13:05 example Permissions
+Filters
+User Action Module Date
+Purpose: Accountability, security, troubleshooting, and compliance — audit logs are the hospital's record of truth for
+every sensitive administrative action.
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 26 of 30
+--- Page 27 ---
+INFORMATION ARCHITECTURE
+24. Final Admin Panel Navigation
+The complete sidebar structure that ties every module together into one coherent navigation system.
+Super Admin Panel Navigation
+Dashboard Doctors
+Patients Departments
+Appointments IVR & Calls
+Online Consultations AI Scribe
+Payments Revenue
+Staff / Admins Roles & Permissions
+Reports & Analytics Notifications
+Hospital Settings System Health
+Audit Logs
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 27 of 30
+--- Page 28 ---
+VISUAL BLUEPRINT
+25. Recommended Dashboard Wireframe
+A polished representation of how the dashboard modules come together on a single screen.
+Hospital Dashboard Today ▾   ●
+Patients Doctors Appointments Today's Revenue
+Online IVR Scribe Pending Payments
+Revenue Overview
+7 / 30 / 12-month trend
+Appointment Overview
+Status breakdown
+Department Performance
+Top 5 departments
+Doctor Overview
+Availability & activity
+IVR & Online Consultation
+Channel health
+Payment Overview
+Method & status breakdown
+⚠ Alerts & Notifications
+⚙ System Status — All Services Operational
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 28 of 30
+--- Page 29 ---
+DESIGN PHILOSOPHY
+26. Key Product Principle
+Dashboard = Summary + Trends + Problems + Quick Actions 
+Detailed information should always remain inside individual modules — the dashboard exists to summarize,
+highlight trends, surface problems, and enable quick action, never to replace the underlying detail views.
+Dashboard: 342 appointments today example ↓
+Appointments Module: full appointment list with patient, doctor, department, date, time, type, status, and filters.
+This keeps the dashboard clean and scannable, while still giving the Super Admin complete control over every
+aspect of hospital operations, one click away.
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 29 of 30
+--- Page 30 ---
+CONCLUSION
+27. Final Summary
+The proposed Super Admin Panel acts as the central control and monitoring layer for the multi-
+speciality hospital ecosystem. It connects hospital operations across the Doctor App, Patient App,
+IVR, Online Consultation, AI Scribe, Payments, and Notifications — while providing centralized
+administration, analytics, financial visibility, security, and operational monitoring in a single, role-
+aware platform. 
+Multi-Speciality Hospital –Super Admin Panel Functional Specification
+Confidential –Prepared for Internal Review Page 30 of 30
