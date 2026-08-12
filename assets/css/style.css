@@ -1,0 +1,162 @@
+/* iThrive Software Official Stylesheet - 100% Color & Style Preserved */
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-primary: #02040a;
+  --bg-secondary: #060b18;
+  --bg-card: rgba(8, 14, 30, 0.85);
+
+  --ithrive-cyan: #00e5ff;
+  --ithrive-blue: #3b82f6;
+  --ithrive-purple: #a855f7;
+
+  --font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'Fira Code', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: #ffffff;
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #02040a;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 5px;
+  border: 2px solid #02040a;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00e5ff;
+}
+
+/* Typography & Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+/* Signature iThrive Pill Button - 100% Exact Matching Uploaded Image */
+.btn-ithrive-pill {
+  background: linear-gradient(90deg, #00e5ff 0%, #3b82f6 50%, #a855f7 100%) !important;
+  color: #050814 !important;
+  font-weight: 800 !important;
+  border-radius: 9999px !important;
+  box-shadow: 0 6px 25px rgba(0, 229, 255, 0.4) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none !important;
+}
+
+.btn-ithrive-pill:hover {
+  background: linear-gradient(90deg, #38bdf8 0%, #60a5fa 50%, #c084fc 100%) !important;
+  box-shadow: 0 10px 35px rgba(0, 229, 255, 0.65), 0 0 25px rgba(168, 85, 247, 0.45) !important;
+  transform: translateY(-2px) scale(1.03) !important;
+}
+
+.btn-ithrive-pill:active {
+  transform: translateY(0px) scale(0.97) !important;
+}
+
+/* Secondary Outline Pill Button */
+.btn-ithrive-outline {
+  background: rgba(10, 16, 35, 0.8) !important;
+  border: 2px solid #3b82f6 !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: 9999px !important;
+  transition: all 0.3s ease !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.btn-ithrive-outline:hover {
+  border-color: #00e5ff !important;
+  color: #00e5ff !important;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.3) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Mouseover Text Color Shift - Default White -> Electric Cyan/Blue */
+.text-white-to-blue {
+  color: #ffffff !important;
+  transition: color 0.3s ease, text-shadow 0.3s ease, transform 0.2s ease;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.text-white-to-blue:hover {
+  color: #00e5ff !important;
+  text-shadow: 0 0 20px #00e5ff, 0 0 40px #3b82f6, 0 0 60px #a855f7;
+  transform: translateY(-2px);
+}
+
+/* Auto-Scrolling Mobile Website inside 3D Smartphone Screen */
+@keyframes mobileWebScroll {
+  0% { transform: translateY(0%); }
+  45% { transform: translateY(-55%); }
+  50% { transform: translateY(-55%); }
+  95% { transform: translateY(0%); }
+  100% { transform: translateY(0%); }
+}
+
+.animate-mobile-web-scroll {
+  animation: mobileWebScroll 12s ease-in-out infinite;
+}
+
+/* Interactive Glowing Cursor Spotlight */
+.cursor-spotlight {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 500px;
+  height: 500px;
+  margin-top: -250px;
+  margin-left: -250px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.18) 0%, rgba(59, 130, 246, 0.09) 45%, transparent 70%);
+  z-index: 9999;
+  transition: transform 0.08s ease-out;
+  mix-blend-mode: screen;
+}
+
+/* Glassmorphic Container */
+.glass-panel {
+  background: rgba(8, 14, 30, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 1.5rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.glass-panel:hover {
+  border-color: rgba(0, 229, 255, 0.6);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 229, 255, 0.3);
+}
