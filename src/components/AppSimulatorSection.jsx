@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Sparkles, ShieldCheck, ArrowRight, Video, HeartPulse, Car, Utensils, Heart, Play, Pause, RefreshCw, Volume2, VolumeX
+  Sparkles, ArrowRight, Video, HeartPulse, Car, Utensils, Heart, Volume2, VolumeX, CheckCircle2, Lock
 } from 'lucide-react';
 import MouseOverText from './MouseOverText';
 import { playClickSound, playHoverSound } from './AudioEngine';
@@ -11,7 +11,6 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
   const [scrollPercent, setScrollPercent] = useState(0);
   const sectionRef = useRef(null);
   const videoRef = useRef(null);
-  const requestRef = useRef(null);
 
   const apps = [
     {
@@ -22,7 +21,7 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
       icon: Car,
       video: '/videos/taxi_ai.mp4',
       tagline: 'Real-Time Driver Dispatch & Spatial GPS Tracking',
-      desc: 'Experience sub-second driver dispatch algorithm, real-time route optimization, and spatial PostGIS map tracking scrubbing smoothly with your mouse scroll.',
+      desc: 'Experience sub-second driver dispatch algorithm, real-time route optimization, and spatial PostGIS map tracking scrubbing smoothly while locked in fullscreen.',
       features: ['Sub-Second Driver Matching', 'Live Spatial GPS Map', 'Dynamic Fare Estimator', 'In-App Instant Audio Call']
     },
     {
@@ -62,7 +61,7 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
 
   const currentApp = apps[activeAppIndex];
 
-  // Scroll-Driven Video Scrubbing Engine (Matching coonoor-club Hero Scrubbing)
+  // Pinned Fullscreen Scrollytelling Video Timeline Scrubbing
   useEffect(() => {
     const handleScroll = () => {
       if (!sectionRef.current || !videoRef.current) return;
@@ -73,14 +72,15 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
 
       if (totalScrollable <= 0) return;
 
-      // Calculate progress from 0 to 1
+      // Progress 0 to 1 while pinned fullscreen
       const progress = Math.max(0, Math.min(1, -rect.top / totalScrollable));
-      setScrollPercent(Math.round(progress * 100));
+      const pct = Math.round(progress * 100);
+      setScrollPercent(pct);
 
-      // Scrub Video currentTime smoothly based on scroll progress
+      // Scrub Video currentTime
       if (videoRef.current.duration) {
         const targetTime = progress * videoRef.current.duration;
-        if (Math.abs(videoRef.current.currentTime - targetTime) > 0.04) {
+        if (Math.abs(videoRef.current.currentTime - targetTime) > 0.03) {
           videoRef.current.currentTime = targetTime;
         }
       }
@@ -94,24 +94,39 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
     <section 
       ref={sectionRef} 
       id="simulator" 
-      className="relative bg-slate-950 border-t border-b border-slate-800/80 min-h-[220vh]"
+      className="relative bg-slate-950 border-t border-b border-slate-800/80 min-h-[350vh] w-full"
     >
-      {/* Sticky Pin Container during Scroll */}
-      <div className="sticky top-0 h-screen flex flex-col justify-between py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 overflow-hidden">
+      {/* 100% EDGE-TO-EDGE FULL-WIDTH & FULL-HEIGHT STICKY BANNER */}
+      <div className="sticky top-0 h-screen w-full flex flex-col justify-between overflow-hidden bg-black">
         
-        {/* Top Header & 4 App Selector Tabs */}
-        <div className="space-y-4 text-center">
+        {/* BACKGROUND 100% FULL-BLEED BANNER VIDEO (NO SIDE MARGINS) */}
+        <div className="absolute inset-0 w-full h-full z-0">
+          <video
+            ref={videoRef}
+            key={currentApp.video}
+            src={currentApp.video}
+            muted={isMuted}
+            playsInline
+            preload="auto"
+            className="w-full h-full object-cover"
+          />
+          {/* Subtle Top & Bottom Gradient Overlays for Sunlight Readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/20 to-slate-950/95 pointer-events-none"></div>
+        </div>
+
+        {/* TOP FLOATING OVERLAY: Header & 4 App Platform Tabs */}
+        <div className="relative z-20 w-full pt-6 px-4 sm:px-8 lg:px-12 text-center space-y-3">
           
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-500/30 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
-            <Video className="w-3.5 h-3.5" /> Mouse-Scrollable 16:9 Video Scrubbing
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-950/90 border border-cyan-500/40 text-cyan-400 text-xs font-semibold uppercase tracking-wider backdrop-blur-md">
+            <Lock className="w-3.5 h-3.5" /> Full-Bleed 100% Widescreen Banner Video
           </div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading tracking-tight text-slate-100">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading tracking-tight text-white drop-shadow-lg">
             Experience Our <MouseOverText text="Interactive UI/UX Mobile Apps" variant="glow" className="text-cyan-400" />
           </h2>
 
           {/* 4 App Platform Buttons */}
-          <div className="flex justify-center items-center gap-2 sm:gap-3 flex-wrap pt-1">
+          <div className="flex justify-center items-center gap-2 sm:gap-3 flex-wrap">
             {apps.map((app, idx) => {
               const Icon = app.icon;
               const isActive = activeAppIndex === idx;
@@ -123,10 +138,10 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
                     setActiveAppIndex(idx);
                   }}
                   onMouseEnter={() => playHoverSound()}
-                  className={`px-4 sm:px-5 py-2 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 rounded-full ${
+                  className={`px-5 py-2 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 rounded-full backdrop-blur-md ${
                     isActive
-                      ? 'btn-ithrive-pill scale-105 shadow-xl shadow-cyan-500/30'
-                      : 'btn-ithrive-outline opacity-70 hover:opacity-100'
+                      ? 'btn-ithrive-pill scale-105 shadow-xl shadow-cyan-500/40'
+                      : 'btn-ithrive-outline bg-slate-950/80 opacity-80 hover:opacity-100 border-slate-700'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -138,83 +153,70 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
 
         </div>
 
-        {/* CENTER: 16:9 FULL-WIDTH WIDESCREEN SCROLLABLE VIDEO STAGE */}
-        <div className="relative w-full aspect-video max-h-[58vh] rounded-3xl overflow-hidden glass-panel border border-cyan-500/40 shadow-2xl shadow-cyan-950/80 group">
+        {/* MIDDLE RIGHT FLOATING BADGE: Scroll Indicator */}
+        <div className="relative z-20 self-end mr-6 sm:mr-12 mb-auto px-4 py-2 rounded-full bg-slate-950/90 border border-cyan-500/50 text-cyan-300 text-xs font-semibold flex items-center gap-2 backdrop-blur-md shadow-2xl">
+          <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+          <span>{scrollPercent < 100 ? '🖱️ Scroll mouse to scrub video banner' : 'Scroll down for next section ↓'}</span>
+        </div>
+
+        {/* BOTTOM FLOATING OVERLAY: App Information, Scrub Bar & CTA */}
+        <div className="relative z-20 w-full pb-8 px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           
-          <video
-            ref={videoRef}
-            key={currentApp.video}
-            src={currentApp.video}
-            muted={isMuted}
-            playsInline
-            preload="auto"
-            className="w-full h-full object-cover"
-          />
-
-          {/* Video Gradient Overlay with App Info */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent pointer-events-none"></div>
-
-          {/* Bottom Video Controls & Info Overlay */}
-          <div className="absolute bottom-4 left-4 right-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3 z-20">
-            
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950/90 border border-cyan-500/40 text-cyan-300 text-xs font-mono">
-                <span>{currentApp.category}</span>
-                <span>•</span>
-                <span>{currentApp.badge}</span>
-              </div>
-              <h3 className="text-xl sm:text-2xl font-black text-white font-heading">
-                {currentApp.name} — <span className="text-cyan-400 font-medium text-sm sm:text-base">{currentApp.tagline}</span>
-              </h3>
+          {/* Left Info Column */}
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950/90 border border-cyan-500/40 text-cyan-300 text-xs font-mono backdrop-blur-md">
+              <span>{currentApp.category}</span>
+              <span>•</span>
+              <span>{currentApp.badge}</span>
             </div>
 
-            {/* Scroll Timeline Progress Bar & Sound Toggle */}
-            <div className="flex items-center gap-3 bg-slate-950/90 p-2.5 rounded-2xl border border-slate-800 backdrop-blur-md">
+            <h3 className="text-2xl sm:text-3xl font-black text-white font-heading drop-shadow-md">
+              {currentApp.name} — <span className="text-cyan-400 font-medium text-base sm:text-lg">{currentApp.tagline}</span>
+            </h3>
+
+            <div className="hidden sm:flex items-center gap-2 pt-1 flex-wrap">
+              {currentApp.features.map((feat, fIdx) => (
+                <span key={fIdx} className="px-3 py-1 rounded-xl bg-slate-950/90 border border-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-1.5 backdrop-blur-md">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
+                  {feat}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Right Action & Scrub Controls Column */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+            
+            {/* Timeline Scrub Progress Counter & Mute Toggle */}
+            <div className="flex items-center justify-between gap-3 bg-slate-950/95 p-3 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-2xl">
               <div className="text-xs font-mono text-cyan-400 font-bold min-w-[75px]">
                 SCRUB {scrollPercent}%
               </div>
-              <div className="w-32 h-2 rounded-full bg-slate-800 overflow-hidden">
+              <div className="w-32 sm:w-44 h-2.5 rounded-full bg-slate-800 overflow-hidden">
                 <div 
-                  className="h-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-75"
+                  className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all duration-75 shadow-lg shadow-cyan-500/50"
                   style={{ width: `${scrollPercent}%` }}
                 ></div>
               </div>
               <button 
                 onClick={() => setIsMuted(!isMuted)}
-                className="p-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-cyan-400 border border-slate-800"
+                className="p-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-cyan-400 border border-slate-800 transition-colors"
+                title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
               >
                 {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               </button>
             </div>
 
+            {/* CTA Button */}
+            <button
+              onClick={onOpenConsultation}
+              className="btn-ithrive-pill px-8 py-3.5 text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 shadow-2xl flex-shrink-0"
+            >
+              <span>Build {currentApp.name}</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+
           </div>
-
-          {/* Scroll Down Indicator Overlay */}
-          <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-slate-950/80 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 animate-bounce">
-            <span>🖱️ Scroll Mouse to Scrub Video</span>
-          </div>
-
-        </div>
-
-        {/* BOTTOM: App Features & CTA */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
-          
-          <div className="flex items-center gap-2 flex-wrap">
-            {currentApp.features.map((feat, fIdx) => (
-              <span key={fIdx} className="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3 text-cyan-400" />
-                {feat}
-              </span>
-            ))}
-          </div>
-
-          <button
-            onClick={onOpenConsultation}
-            className="btn-ithrive-pill px-6 py-2.5 text-xs font-black uppercase tracking-wider flex items-center gap-2 flex-shrink-0"
-          >
-            <span>Build {currentApp.name}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
 
         </div>
 
