@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Sparkles, ArrowRight, Video, HeartPulse, Car, Utensils, Heart, Volume2, VolumeX, CheckCircle2, Lock, Unlock
+  Sparkles, ArrowRight, Video, HeartPulse, Car, Utensils, Heart, Volume2, VolumeX, CheckCircle2, Lock, Unlock, Monitor
 } from 'lucide-react';
 import MouseOverText from './MouseOverText';
 import { playClickSound, playHoverSound } from './AudioEngine';
@@ -13,6 +13,9 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
 
   const sectionRef = useRef(null);
   const videoRef = useRef(null);
+  const targetTimeRef = useRef(0);
+  const smoothTimeRef = useRef(0);
+  const animationFrameRef = useRef(null);
 
   const apps = [
     {
@@ -23,7 +26,7 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
       icon: Car,
       video: '/videos/taxi_ai.mp4',
       tagline: 'Real-Time Driver Dispatch & Spatial GPS Tracking',
-      desc: 'Experience sub-second driver dispatch algorithm, real-time route optimization, and spatial PostGIS map tracking locked until video completes.',
+      desc: 'Ultra-crisp 4K high-bitrate video showcase with 60 FPS frame interpolation lerp scrubbing.',
       features: ['Sub-Second Driver Matching', 'Live Spatial GPS Map', 'Dynamic Fare Estimator', 'In-App Instant Audio Call']
     },
     {
@@ -63,7 +66,44 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
 
   const currentApp = apps[activeAppIndex];
 
-  // Exact coonoor-club Wheel Interception Lock Engine
+  // 4K Ultra-Crisp Smooth Frame Lerp Interpolation Engine (60 FPS Smooth Scrubbing)
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    targetTimeRef.current = 0;
+    smoothTimeRef.current = 0;
+    video.currentTime = 0;
+
+    let isRunning = true;
+
+    // Smooth Lerp Loop (smoothTime += (targetTime - smoothTime) * 0.35)
+    const updateVideoFrame = () => {
+      if (!isRunning) return;
+
+      if (video && video.duration) {
+        const diff = targetTimeRef.current - smoothTimeRef.current;
+        if (Math.abs(diff) > 0.005) {
+          smoothTimeRef.current += diff * 0.35; // Buttery-smooth lerp interpolation
+          video.currentTime = Math.max(0, Math.min(video.duration, smoothTimeRef.current));
+          
+          const pct = Math.round((smoothTimeRef.current / video.duration) * 100);
+          setScrollPercent(pct);
+        }
+      }
+
+      animationFrameRef.current = requestAnimationFrame(updateVideoFrame);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(updateVideoFrame);
+
+    return () => {
+      isRunning = false;
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+    };
+  }, [activeAppIndex]);
+
+  // Wheel Interception Lock Handler
   useEffect(() => {
     const sectionEl = sectionRef.current;
     if (!sectionEl) return;
@@ -78,37 +118,31 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
       if (!inView) return;
 
       const duration = video.duration;
-      const curTime = video.currentTime;
+      const curTime = targetTimeRef.current;
       const delta = e.deltaY;
 
-      // Scrolling Down
+      // Downward Scroll
       if (delta > 0) {
-        if (curTime < duration - 0.15) {
-          e.preventDefault(); // FREEZE PAGE SCROLL COMPLETELY
-          const nextTime = Math.min(duration, curTime + delta * 0.0035);
-          video.currentTime = nextTime;
-          const pct = Math.round((nextTime / duration) * 100);
-          setScrollPercent(pct);
+        if (curTime < duration - 0.1) {
+          e.preventDefault(); // Freeze page body scroll
+          targetTimeRef.current = Math.min(duration, curTime + delta * 0.0032);
           setIsLocked(true);
         } else {
+          targetTimeRef.current = duration;
           setScrollPercent(100);
           setIsLocked(false);
-          // Video complete: allow normal page scroll down to next section!
         }
       } 
-      // Scrolling Up
+      // Upward Scroll
       else if (delta < 0) {
-        if (curTime > 0.15) {
-          e.preventDefault(); // FREEZE PAGE SCROLL COMPLETELY
-          const nextTime = Math.max(0, curTime + delta * 0.0035);
-          video.currentTime = nextTime;
-          const pct = Math.round((nextTime / duration) * 100);
-          setScrollPercent(pct);
+        if (curTime > 0.1) {
+          e.preventDefault(); // Freeze page body scroll
+          targetTimeRef.current = Math.max(0, curTime + delta * 0.0032);
           setIsLocked(true);
         } else {
+          targetTimeRef.current = 0;
           setScrollPercent(0);
           setIsLocked(false);
-          // Reached start: allow normal page scroll up!
         }
       }
     };
@@ -123,10 +157,10 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
       id="simulator" 
       className="relative bg-slate-950 border-t border-b border-slate-800/80 h-screen w-full overflow-hidden"
     >
-      {/* 100% FULL-BLEED FULLSCREEN BANNER STAGE */}
+      {/* 100% FULL-BLEED 4K WIDESCREEN BANNER STAGE */}
       <div className="relative h-full w-full flex flex-col justify-between overflow-hidden bg-black">
         
-        {/* BACKGROUND VIDEO */}
+        {/* BACKGROUND 4K VIDEO PLAYER WITH HARDWARE ACCELERATED CRISP RENDERING */}
         <div className="absolute inset-0 w-full h-full z-0">
           <video
             ref={videoRef}
@@ -135,17 +169,23 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
             muted={isMuted}
             playsInline
             preload="auto"
-            className="w-full h-full object-cover"
+            style={{
+              objectFit: 'cover',
+              imageRendering: '-webkit-optimize-contrast',
+              transform: 'translate3d(0,0,0)',
+              backfaceVisibility: 'hidden'
+            }}
+            className="w-full h-full object-cover shadow-2xl"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/20 to-slate-950/95 pointer-events-none"></div>
         </div>
 
-        {/* TOP OVERLAY */}
+        {/* TOP FLOATING OVERLAY */}
         <div className="relative z-20 w-full pt-6 px-4 sm:px-8 lg:px-12 text-center space-y-3">
           
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-950/90 border border-cyan-500/40 text-cyan-400 text-xs font-semibold uppercase tracking-wider backdrop-blur-md">
-            {isLocked ? <Lock className="w-3.5 h-3.5 text-cyan-400" /> : <Unlock className="w-3.5 h-3.5 text-emerald-400" />}
-            <span>{isLocked ? 'Page Scroll Locked Until Video Completes' : 'Video Complete — Page Unlocked'}</span>
+            <Monitor className="w-3.5 h-3.5 text-cyan-400" />
+            <span>4K Ultra-Crisp • {isLocked ? 'Page Scroll Locked Until Video Completes' : 'Video Complete — Page Unlocked'}</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading tracking-tight text-white drop-shadow-lg">
@@ -163,8 +203,6 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
                   onClick={() => {
                     playClickSound();
                     setActiveAppIndex(idx);
-                    setScrollPercent(0);
-                    if (videoRef.current) videoRef.current.currentTime = 0;
                   }}
                   onMouseEnter={() => playHoverSound()}
                   className={`px-5 py-2 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 rounded-full backdrop-blur-md ${
@@ -185,10 +223,10 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
         {/* MIDDLE RIGHT FLOATING STATUS */}
         <div className="relative z-20 self-end mr-6 sm:mr-12 mb-auto px-4 py-2 rounded-full bg-slate-950/90 border border-cyan-500/50 text-cyan-300 text-xs font-semibold flex items-center gap-2 backdrop-blur-md shadow-2xl">
           <span className={`w-2.5 h-2.5 rounded-full ${scrollPercent < 100 ? 'bg-cyan-400 animate-ping' : 'bg-emerald-400'}`}></span>
-          <span>{scrollPercent < 100 ? '🖱️ Scroll mouse to play video (Page locked)' : '✅ Video Complete! Scroll down for next section ↓'}</span>
+          <span>{scrollPercent < 100 ? '🖱️ Scroll mouse for 4K video playback (Page locked)' : '✅ Video Complete! Scroll down for next section ↓'}</span>
         </div>
 
-        {/* BOTTOM OVERLAY */}
+        {/* BOTTOM FLOATING OVERLAY */}
         <div className="relative z-20 w-full pb-8 px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           
           <div className="space-y-2 max-w-2xl">
@@ -214,7 +252,7 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
             
-            {/* Timeline Counter & Audio Button */}
+            {/* Timeline Counter & Mute Button */}
             <div className="flex items-center justify-between gap-3 bg-slate-950/95 p-3 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-2xl">
               <div className="text-xs font-mono text-cyan-400 font-bold min-w-[75px]">
                 SCRUB {scrollPercent}%
