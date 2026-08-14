@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  Sparkles, ArrowRight, Video, HeartPulse, Car, Utensils, Heart, Volume2, VolumeX, CheckCircle2, Lock
+  Sparkles, ArrowRight, Video, HeartPulse, Car, Utensils, Heart, Volume2, VolumeX, CheckCircle2, Lock, Unlock
 } from 'lucide-react';
 import MouseOverText from './MouseOverText';
 import { playClickSound, playHoverSound } from './AudioEngine';
@@ -9,6 +9,8 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
   const [activeAppIndex, setActiveAppIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
   const [scrollPercent, setScrollPercent] = useState(0);
+  const [isLocked, setIsLocked] = useState(true);
+
   const sectionRef = useRef(null);
   const videoRef = useRef(null);
 
@@ -21,7 +23,7 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
       icon: Car,
       video: '/videos/taxi_ai.mp4',
       tagline: 'Real-Time Driver Dispatch & Spatial GPS Tracking',
-      desc: 'Experience sub-second driver dispatch algorithm, real-time route optimization, and spatial PostGIS map tracking scrubbing smoothly while locked in fullscreen.',
+      desc: 'Experience sub-second driver dispatch algorithm, real-time route optimization, and spatial PostGIS map tracking locked until video completes.',
       features: ['Sub-Second Driver Matching', 'Live Spatial GPS Map', 'Dynamic Fare Estimator', 'In-App Instant Audio Call']
     },
     {
@@ -61,45 +63,70 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
 
   const currentApp = apps[activeAppIndex];
 
-  // Pinned Fullscreen Scrollytelling Video Timeline Scrubbing
+  // Exact coonoor-club Wheel Interception Lock Engine
   useEffect(() => {
-    const handleScroll = () => {
-      if (!sectionRef.current || !videoRef.current) return;
+    const sectionEl = sectionRef.current;
+    if (!sectionEl) return;
 
-      const rect = sectionRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const totalScrollable = rect.height - windowHeight;
+    const handleWheel = (e) => {
+      const video = videoRef.current;
+      if (!video || !video.duration) return;
 
-      if (totalScrollable <= 0) return;
+      const rect = sectionEl.getBoundingClientRect();
+      const inView = rect.top <= 10 && rect.bottom >= window.innerHeight - 10;
 
-      // Progress 0 to 1 while pinned fullscreen
-      const progress = Math.max(0, Math.min(1, -rect.top / totalScrollable));
-      const pct = Math.round(progress * 100);
-      setScrollPercent(pct);
+      if (!inView) return;
 
-      // Scrub Video currentTime
-      if (videoRef.current.duration) {
-        const targetTime = progress * videoRef.current.duration;
-        if (Math.abs(videoRef.current.currentTime - targetTime) > 0.03) {
-          videoRef.current.currentTime = targetTime;
+      const duration = video.duration;
+      const curTime = video.currentTime;
+      const delta = e.deltaY;
+
+      // Scrolling Down
+      if (delta > 0) {
+        if (curTime < duration - 0.15) {
+          e.preventDefault(); // FREEZE PAGE SCROLL COMPLETELY
+          const nextTime = Math.min(duration, curTime + delta * 0.0035);
+          video.currentTime = nextTime;
+          const pct = Math.round((nextTime / duration) * 100);
+          setScrollPercent(pct);
+          setIsLocked(true);
+        } else {
+          setScrollPercent(100);
+          setIsLocked(false);
+          // Video complete: allow normal page scroll down to next section!
+        }
+      } 
+      // Scrolling Up
+      else if (delta < 0) {
+        if (curTime > 0.15) {
+          e.preventDefault(); // FREEZE PAGE SCROLL COMPLETELY
+          const nextTime = Math.max(0, curTime + delta * 0.0035);
+          video.currentTime = nextTime;
+          const pct = Math.round((nextTime / duration) * 100);
+          setScrollPercent(pct);
+          setIsLocked(true);
+        } else {
+          setScrollPercent(0);
+          setIsLocked(false);
+          // Reached start: allow normal page scroll up!
         }
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('wheel', handleWheel, { passive: false });
+    return () => window.removeEventListener('wheel', handleWheel);
   }, [activeAppIndex]);
 
   return (
     <section 
       ref={sectionRef} 
       id="simulator" 
-      className="relative bg-slate-950 border-t border-b border-slate-800/80 min-h-[350vh] w-full"
+      className="relative bg-slate-950 border-t border-b border-slate-800/80 h-screen w-full overflow-hidden"
     >
-      {/* 100% EDGE-TO-EDGE FULL-WIDTH & FULL-HEIGHT STICKY BANNER */}
-      <div className="sticky top-0 h-screen w-full flex flex-col justify-between overflow-hidden bg-black">
+      {/* 100% FULL-BLEED FULLSCREEN BANNER STAGE */}
+      <div className="relative h-full w-full flex flex-col justify-between overflow-hidden bg-black">
         
-        {/* BACKGROUND 100% FULL-BLEED BANNER VIDEO (NO SIDE MARGINS) */}
+        {/* BACKGROUND VIDEO */}
         <div className="absolute inset-0 w-full h-full z-0">
           <video
             ref={videoRef}
@@ -110,15 +137,15 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
             preload="auto"
             className="w-full h-full object-cover"
           />
-          {/* Subtle Top & Bottom Gradient Overlays for Sunlight Readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/20 to-slate-950/95 pointer-events-none"></div>
         </div>
 
-        {/* TOP FLOATING OVERLAY: Header & 4 App Platform Tabs */}
+        {/* TOP OVERLAY */}
         <div className="relative z-20 w-full pt-6 px-4 sm:px-8 lg:px-12 text-center space-y-3">
           
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-950/90 border border-cyan-500/40 text-cyan-400 text-xs font-semibold uppercase tracking-wider backdrop-blur-md">
-            <Lock className="w-3.5 h-3.5" /> Full-Bleed 100% Widescreen Banner Video
+            {isLocked ? <Lock className="w-3.5 h-3.5 text-cyan-400" /> : <Unlock className="w-3.5 h-3.5 text-emerald-400" />}
+            <span>{isLocked ? 'Page Scroll Locked Until Video Completes' : 'Video Complete — Page Unlocked'}</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading tracking-tight text-white drop-shadow-lg">
@@ -136,6 +163,8 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
                   onClick={() => {
                     playClickSound();
                     setActiveAppIndex(idx);
+                    setScrollPercent(0);
+                    if (videoRef.current) videoRef.current.currentTime = 0;
                   }}
                   onMouseEnter={() => playHoverSound()}
                   className={`px-5 py-2 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 rounded-full backdrop-blur-md ${
@@ -153,16 +182,15 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
 
         </div>
 
-        {/* MIDDLE RIGHT FLOATING BADGE: Scroll Indicator */}
+        {/* MIDDLE RIGHT FLOATING STATUS */}
         <div className="relative z-20 self-end mr-6 sm:mr-12 mb-auto px-4 py-2 rounded-full bg-slate-950/90 border border-cyan-500/50 text-cyan-300 text-xs font-semibold flex items-center gap-2 backdrop-blur-md shadow-2xl">
-          <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
-          <span>{scrollPercent < 100 ? '🖱️ Scroll mouse to scrub video banner' : 'Scroll down for next section ↓'}</span>
+          <span className={`w-2.5 h-2.5 rounded-full ${scrollPercent < 100 ? 'bg-cyan-400 animate-ping' : 'bg-emerald-400'}`}></span>
+          <span>{scrollPercent < 100 ? '🖱️ Scroll mouse to play video (Page locked)' : '✅ Video Complete! Scroll down for next section ↓'}</span>
         </div>
 
-        {/* BOTTOM FLOATING OVERLAY: App Information, Scrub Bar & CTA */}
+        {/* BOTTOM OVERLAY */}
         <div className="relative z-20 w-full pb-8 px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           
-          {/* Left Info Column */}
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950/90 border border-cyan-500/40 text-cyan-300 text-xs font-mono backdrop-blur-md">
               <span>{currentApp.category}</span>
@@ -184,10 +212,9 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
             </div>
           </div>
 
-          {/* Right Action & Scrub Controls Column */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
             
-            {/* Timeline Scrub Progress Counter & Mute Toggle */}
+            {/* Timeline Counter & Audio Button */}
             <div className="flex items-center justify-between gap-3 bg-slate-950/95 p-3 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-2xl">
               <div className="text-xs font-mono text-cyan-400 font-bold min-w-[75px]">
                 SCRUB {scrollPercent}%
@@ -207,7 +234,6 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
               </button>
             </div>
 
-            {/* CTA Button */}
             <button
               onClick={onOpenConsultation}
               className="btn-ithrive-pill px-8 py-3.5 text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 shadow-2xl flex-shrink-0"
