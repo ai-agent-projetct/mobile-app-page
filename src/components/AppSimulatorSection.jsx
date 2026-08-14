@@ -153,59 +153,13 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
     <section 
       ref={sectionRef} 
       id="simulator" 
-      className="relative bg-slate-950 border-t border-b border-slate-800/80 min-h-[350vh] w-full py-12"
+      className="relative bg-slate-950 border-t border-b border-slate-800/80 min-h-[350vh] w-full"
     >
-      {/* PINNED FULLSCREEN CONTAINER - 100% FULL-BLEED SCREEN WIDTH (NO LEFT/RIGHT EMPTY MARGINS) */}
-      <div className="sticky top-0 h-screen w-full flex flex-col justify-between py-4 px-0 z-10 overflow-hidden bg-slate-950/95">
+      {/* 100% FULL-SCREEN FULL-VIEWPORT STICKY CANVAS (VIDEO ALONE COVERS ENTIRE SCREEN 100vw x 100vh) */}
+      <div className="sticky top-0 h-screen w-full flex flex-col justify-between overflow-hidden bg-black">
         
-        {/* ================= ABOVE VIDEO: Section Title & 4 Platform Tabs ================= */}
-        <div className="space-y-3 text-center z-20 px-4 sm:px-8">
-          
-          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-slate-900 border border-cyan-500/40 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
-            {isLocked ? <Lock className="w-3.5 h-3.5 text-cyan-400" /> : <Unlock className="w-3.5 h-3.5 text-emerald-400" />}
-            <span>1920x1080 Widescreen 16:9 • {isLocked ? 'Scroll Locked Until Video Completes' : 'Video Complete — Scroll Down For Next Section'}</span>
-          </div>
-
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading tracking-tight text-white">
-            Experience Our <MouseOverText text="Interactive UI/UX Mobile Apps" variant="glow" className="text-cyan-400" />
-          </h2>
-
-          {/* 4 App Platform Buttons */}
-          <div className="flex justify-center items-center gap-2 sm:gap-3 flex-wrap">
-            {apps.map((app, idx) => {
-              const Icon = app.icon;
-              const isActive = activeAppIndex === idx;
-              return (
-                <button
-                  key={app.id}
-                  onClick={() => {
-                    playClickSound();
-                    setActiveAppIndex(idx);
-                  }}
-                  onMouseEnter={() => playHoverSound()}
-                  className={`px-5 py-2 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 rounded-full ${
-                    isActive
-                      ? 'btn-ithrive-pill scale-105 shadow-xl shadow-cyan-500/40'
-                      : 'btn-ithrive-outline bg-slate-900/90 opacity-80 hover:opacity-100 border-slate-700'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{app.name}</span>
-                </button>
-              );
-            })}
-          </div>
-
-        </div>
-
-        {/* ================= CENTER: 100% EDGE-TO-EDGE 1920x1080 WIDESCREEN BANNER STAGE (ZERO SIDE MARGINS) ================= */}
-        <div 
-          className="relative w-full aspect-video max-h-[58vh] overflow-hidden border-y-2 border-cyan-500/50 shadow-2xl shadow-cyan-500/20 my-auto bg-black group"
-          style={{
-            boxShadow: '0 25px 60px -15px rgba(0, 229, 255, 0.3), 0 0 50px rgba(59, 130, 246, 0.25)'
-          }}
-        >
-          {/* Standalone 100% Edge-to-Edge Widescreen Video Banner */}
+        {/* VIDEO ALONE COVERS ENTIRE SCREEN (100% EDGE-TO-EDGE FULL-BLEED 4K STAGE) */}
+        <div className="absolute inset-0 w-full h-full z-0">
           <video
             ref={videoRef}
             key={currentApp.video}
@@ -219,69 +173,112 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
               transform: 'translate3d(0,0,0)',
               backfaceVisibility: 'hidden'
             }}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover shadow-2xl"
           />
+          {/* Subtle 3D Vignette Overlay for Depth & Contrast */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/85 via-transparent to-slate-950/90 pointer-events-none"></div>
+        </div>
 
-          {/* Minimal Floating Scrub Progress Counter at Bottom Right Corner */}
-          <div className="absolute bottom-3 right-6 flex items-center gap-3 bg-slate-950/90 px-3 py-1.5 rounded-xl border border-slate-800 backdrop-blur-md text-xs font-mono text-cyan-400 font-bold z-20">
-            <span>SCRUB {scrollPercent}%</span>
-            <div className="w-28 h-2 rounded-full bg-slate-800 overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-75"
-                style={{ width: `${scrollPercent}%` }}
-              ></div>
-            </div>
-            <button 
-              onClick={() => setIsMuted(!isMuted)}
-              className="p-1 rounded-lg bg-slate-900 text-slate-300 hover:text-cyan-400 border border-slate-800"
-              title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
-            >
-              {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-            </button>
+        {/* TOP FLOATING OVERLAY: Title & 4 Platform Tabs */}
+        <div className="relative z-20 w-full pt-6 px-4 sm:px-8 lg:px-12 text-center space-y-3">
+          
+          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-slate-950/80 border border-cyan-500/40 text-cyan-400 text-xs font-semibold uppercase tracking-wider backdrop-blur-md">
+            {isLocked ? <Lock className="w-3.5 h-3.5 text-cyan-400" /> : <Unlock className="w-3.5 h-3.5 text-emerald-400" />}
+            <span>3D Fullscreen Video View • {isLocked ? 'Scroll Locked Until Video Completes' : 'Video Complete — Scroll Down For Next Section'}</span>
           </div>
 
-          {/* Mouse Scroll Hint Badge */}
-          <div className="absolute top-3 left-6 px-3 py-1 rounded-full bg-slate-950/80 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 z-20">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-            <span>🖱️ Scroll mouse to scrub 1920x1080 4K video banner</span>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading tracking-tight text-white drop-shadow-2xl">
+            Experience Our <MouseOverText text="Interactive UI/UX Mobile Apps" variant="glow" className="text-cyan-400" />
+          </h2>
+
+          {/* 4 App Platform Tabs */}
+          <div className="flex justify-center items-center gap-2 sm:gap-3 flex-wrap">
+            {apps.map((app, idx) => {
+              const Icon = app.icon;
+              const isActive = activeAppIndex === idx;
+              return (
+                <button
+                  key={app.id}
+                  onClick={() => {
+                    playClickSound();
+                    setActiveAppIndex(idx);
+                  }}
+                  onMouseEnter={() => playHoverSound()}
+                  className={`px-5 py-2 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 rounded-full backdrop-blur-md ${
+                    isActive
+                      ? 'btn-ithrive-pill scale-105 shadow-xl shadow-cyan-500/50'
+                      : 'btn-ithrive-outline bg-slate-950/80 opacity-85 hover:opacity-100 border-slate-700'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{app.name}</span>
+                </button>
+              );
+            })}
           </div>
 
         </div>
 
-        {/* ================= BELOW VIDEO: Content, Features Checklist & CTA ================= */}
-        <div className="space-y-3 pt-2 z-20 bg-slate-950/95 p-4 sm:p-6 rounded-none md:rounded-2xl border-t border-slate-800 max-w-7xl mx-auto w-full">
+        {/* MIDDLE FLOATING STATUS BADGE */}
+        <div className="relative z-20 self-end mr-6 sm:mr-12 px-4 py-2 rounded-full bg-slate-950/80 border border-cyan-500/50 text-cyan-300 text-xs font-semibold flex items-center gap-2 backdrop-blur-md shadow-2xl">
+          <span className={`w-2.5 h-2.5 rounded-full ${scrollPercent < 100 ? 'bg-cyan-400 animate-ping' : 'bg-emerald-400'}`}></span>
+          <span>{scrollPercent < 100 ? '🖱️ Scroll mouse to scrub 3D full-screen video' : '✅ Video Complete! Scroll down for next section ↓'}</span>
+        </div>
+
+        {/* BOTTOM FLOATING OVERLAY: App Information, Scrub Progress & CTA */}
+        <div className="relative z-20 w-full pb-6 px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="space-y-1.5 max-w-2xl bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-mono">
+              <span>{currentApp.category}</span>
+              <span>•</span>
+              <span>{currentApp.badge}</span>
+            </div>
+
+            <h3 className="text-xl sm:text-2xl font-black text-white font-heading drop-shadow-md">
+              {currentApp.name} — <span className="text-cyan-400 font-medium text-sm sm:text-base">{currentApp.tagline}</span>
+            </h3>
+
+            <div className="hidden sm:flex items-center gap-2 pt-1 flex-wrap">
+              {currentApp.features.map((feat, fIdx) => (
+                <span key={fIdx} className="px-2.5 py-0.5 rounded-lg bg-slate-900/90 border border-slate-800 text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3 h-3 text-cyan-400" />
+                  {feat}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
             
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/40 text-cyan-300 text-xs font-mono">
-                <span>{currentApp.category}</span>
-                <span>•</span>
-                <span>{currentApp.badge}</span>
+            {/* Timeline Scrub Counter & Audio Mute Button */}
+            <div className="flex items-center justify-between gap-3 bg-slate-950/90 p-2.5 rounded-2xl border border-slate-800 backdrop-blur-md shadow-2xl">
+              <div className="text-xs font-mono text-cyan-400 font-bold min-w-[75px]">
+                SCRUB {scrollPercent}%
               </div>
-              <h3 className="text-xl sm:text-2xl font-black text-white font-heading">
-                {currentApp.name} — <span className="text-cyan-400 font-medium text-sm sm:text-base">{currentApp.tagline}</span>
-              </h3>
+              <div className="w-32 sm:w-40 h-2 rounded-full bg-slate-800 overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all duration-75 shadow-lg shadow-cyan-500/50"
+                  style={{ width: `${scrollPercent}%` }}
+                ></div>
+              </div>
+              <button 
+                onClick={() => setIsMuted(!isMuted)}
+                className="p-1 rounded-lg bg-slate-900 text-slate-300 hover:text-cyan-400 border border-slate-800 transition-colors"
+                title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+              >
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
             </div>
 
             <button
               onClick={onOpenConsultation}
-              className="btn-ithrive-pill px-8 py-3 text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center gap-2 flex-shrink-0"
+              className="btn-ithrive-pill px-7 py-3 text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 shadow-2xl flex-shrink-0"
             >
               <span>Build {currentApp.name}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-slate-800/80">
-            {currentApp.features.map((feat, fIdx) => (
-              <div key={fIdx} className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-                <span className="truncate">{feat}</span>
-              </div>
-            ))}
           </div>
 
         </div>
