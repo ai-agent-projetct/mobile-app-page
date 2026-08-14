@@ -26,7 +26,7 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
       icon: Car,
       video: '/videos/taxi_ai.mp4',
       tagline: 'Real-Time Driver Dispatch & Spatial GPS Tracking',
-      desc: 'Experience sub-second driver dispatch algorithm, real-time route optimization, and spatial PostGIS map tracking locked until video completes.',
+      desc: 'Sub-second driver matching algorithm, real-time route optimization, and spatial PostGIS map tracking scrubbing smoothly.',
       features: ['Sub-Second Driver Matching', 'Live Spatial GPS Map', 'Dynamic Fare Estimator', 'In-App Instant Audio Call']
     },
     {
@@ -82,7 +82,7 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
 
       if (video && video.duration) {
         const diff = targetTimeRef.current - smoothTimeRef.current;
-        if (Math.abs(diff) > 0.003) {
+        if (Math.abs(diff) > 0.002) {
           smoothTimeRef.current += diff * 0.35;
           video.currentTime = Math.max(0, Math.min(video.duration, smoothTimeRef.current));
           
@@ -112,7 +112,6 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
       if (!video || !video.duration) return;
 
       const rect = sectionEl.getBoundingClientRect();
-      // Section is active in view
       const inView = rect.top <= 80 && rect.bottom >= window.innerHeight - 80;
 
       if (!inView) return;
@@ -121,31 +120,24 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
       const curTime = targetTimeRef.current;
       const delta = e.deltaY;
 
-      // SCROLLING DOWN
       if (delta > 0) {
         if (curTime < duration - 0.15) {
-          // Freeze normal page scroll completely so video scrubs first
           e.preventDefault();
           e.stopPropagation();
           targetTimeRef.current = Math.min(duration, curTime + delta * 0.0032);
           setIsLocked(true);
         } else {
-          // Video finished scrubbing! Release lock and allow normal scroll down to next section
           targetTimeRef.current = duration;
           setScrollPercent(100);
           setIsLocked(false);
         }
-      } 
-      // SCROLLING UP
-      else if (delta < 0) {
+      } else if (delta < 0) {
         if (curTime > 0.15) {
-          // Freeze normal page scroll completely so video scrubs backward first
           e.preventDefault();
           e.stopPropagation();
           targetTimeRef.current = Math.max(0, curTime + delta * 0.0032);
           setIsLocked(true);
         } else {
-          // Reached beginning of video! Release lock and allow normal scroll up
           targetTimeRef.current = 0;
           setScrollPercent(0);
           setIsLocked(false);
@@ -161,40 +153,20 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
     <section 
       ref={sectionRef} 
       id="simulator" 
-      className="relative bg-slate-950 border-t border-b border-slate-800/80 h-screen w-full overflow-hidden"
+      className="relative bg-slate-950 border-t border-b border-slate-800/80 min-h-[350vh] w-full py-16"
     >
-      {/* 100% FULL-BLEED FULLSCREEN BANNER STAGE */}
-      <div className="relative h-full w-full flex flex-col justify-between overflow-hidden bg-black">
+      {/* PINNED FULLSCREEN CONTAINER */}
+      <div className="sticky top-0 h-screen w-full flex flex-col justify-between py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 overflow-hidden bg-slate-950/95">
         
-        {/* BACKGROUND 4K VIDEO */}
-        <div className="absolute inset-0 w-full h-full z-0">
-          <video
-            ref={videoRef}
-            key={currentApp.video}
-            src={currentApp.video}
-            muted={isMuted}
-            playsInline
-            preload="auto"
-            style={{
-              objectFit: 'cover',
-              imageRendering: '-webkit-optimize-contrast',
-              transform: 'translate3d(0,0,0)',
-              backfaceVisibility: 'hidden'
-            }}
-            className="w-full h-full object-cover shadow-2xl"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/20 to-slate-950/95 pointer-events-none"></div>
-        </div>
-
-        {/* TOP FLOATING OVERLAY */}
-        <div className="relative z-20 w-full pt-6 px-4 sm:px-8 lg:px-12 text-center space-y-3">
+        {/* ================= ABOVE VIDEO: Section Title & 4 Platform Tabs ================= */}
+        <div className="space-y-3 text-center z-20">
           
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-950/90 border border-cyan-500/40 text-cyan-400 text-xs font-semibold uppercase tracking-wider backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 border border-cyan-500/40 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
             {isLocked ? <Lock className="w-3.5 h-3.5 text-cyan-400" /> : <Unlock className="w-3.5 h-3.5 text-emerald-400" />}
-            <span>{isLocked ? 'Normal Scroll Paused — Scrubbing Video First' : 'Video Scrubbing Complete — Normal Scroll Resumed'}</span>
+            <span>{isLocked ? 'Page Scroll Locked Until Video Completes' : 'Video Complete — Scroll Down For Next Section'}</span>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading tracking-tight text-white drop-shadow-lg">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading tracking-tight text-white">
             Experience Our <MouseOverText text="Interactive UI/UX Mobile Apps" variant="glow" className="text-cyan-400" />
           </h2>
 
@@ -211,10 +183,10 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
                     setActiveAppIndex(idx);
                   }}
                   onMouseEnter={() => playHoverSound()}
-                  className={`px-5 py-2 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 rounded-full backdrop-blur-md ${
+                  className={`px-5 py-2 text-xs sm:text-sm font-bold transition-all flex items-center gap-2 rounded-full ${
                     isActive
                       ? 'btn-ithrive-pill scale-105 shadow-xl shadow-cyan-500/40'
-                      : 'btn-ithrive-outline bg-slate-950/80 opacity-80 hover:opacity-100 border-slate-700'
+                      : 'btn-ithrive-outline bg-slate-900/90 opacity-80 hover:opacity-100 border-slate-700'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -226,66 +198,92 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
 
         </div>
 
-        {/* MIDDLE RIGHT FLOATING STATUS */}
-        <div className="relative z-20 self-end mr-6 sm:mr-12 mb-auto px-4 py-2 rounded-full bg-slate-950/90 border border-cyan-500/50 text-cyan-300 text-xs font-semibold flex items-center gap-2 backdrop-blur-md shadow-2xl">
-          <span className={`w-2.5 h-2.5 rounded-full ${scrollPercent < 100 ? 'bg-cyan-400 animate-ping' : 'bg-emerald-400'}`}></span>
-          <span>{scrollPercent < 100 ? '🖱️ Scroll mouse to play video (Normal scroll paused)' : '✅ Video Complete! Scroll down for next section ↓'}</span>
-        </div>
+        {/* ================= CENTER: STANDALONE CLEAN 4K 16:9 VIDEO STAGE WITH 3D GLASS SHADOW ================= */}
+        <div 
+          className="relative w-full aspect-video max-h-[52vh] rounded-3xl overflow-hidden glass-panel border-2 border-cyan-500/50 shadow-2xl shadow-cyan-500/20 my-auto group"
+          style={{
+            perspective: '1200px',
+            transform: 'perspective(1200px) rotateX(1deg)',
+            boxShadow: '0 25px 60px -15px rgba(0, 229, 255, 0.25), 0 0 40px rgba(59, 130, 246, 0.2)'
+          }}
+        >
+          {/* Standalone Video Canvas - ZERO TEXT OVERLAID ON TOP OF VIDEO */}
+          <video
+            ref={videoRef}
+            key={currentApp.video}
+            src={currentApp.video}
+            muted={isMuted}
+            playsInline
+            preload="auto"
+            style={{
+              objectFit: 'cover',
+              imageRendering: '-webkit-optimize-contrast',
+              transform: 'translate3d(0,0,0)',
+              backfaceVisibility: 'hidden'
+            }}
+            className="w-full h-full object-cover"
+          />
 
-        {/* BOTTOM FLOATING OVERLAY */}
-        <div className="relative z-20 w-full pb-8 px-4 sm:px-8 lg:px-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-          
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-950/90 border border-cyan-500/40 text-cyan-300 text-xs font-mono backdrop-blur-md">
-              <span>{currentApp.category}</span>
-              <span>•</span>
-              <span>{currentApp.badge}</span>
+          {/* Minimal Floating Scrub Progress Counter at Bottom Right Corner */}
+          <div className="absolute bottom-3 right-3 flex items-center gap-3 bg-slate-950/90 px-3 py-1.5 rounded-xl border border-slate-800 backdrop-blur-md text-xs font-mono text-cyan-400 font-bold z-20">
+            <span>SCRUB {scrollPercent}%</span>
+            <div className="w-24 h-2 rounded-full bg-slate-800 overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-75"
+                style={{ width: `${scrollPercent}%` }}
+              ></div>
             </div>
-
-            <h3 className="text-2xl sm:text-3xl font-black text-white font-heading drop-shadow-md">
-              {currentApp.name} — <span className="text-cyan-400 font-medium text-base sm:text-lg">{currentApp.tagline}</span>
-            </h3>
-
-            <div className="hidden sm:flex items-center gap-2 pt-1 flex-wrap">
-              {currentApp.features.map((feat, fIdx) => (
-                <span key={fIdx} className="px-3 py-1 rounded-xl bg-slate-950/90 border border-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-1.5 backdrop-blur-md">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
-                  {feat}
-                </span>
-              ))}
-            </div>
+            <button 
+              onClick={() => setIsMuted(!isMuted)}
+              className="p-1 rounded-lg bg-slate-900 text-slate-300 hover:text-cyan-400 border border-slate-800"
+              title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+            >
+              {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+            </button>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
+          {/* Mouse Scroll Hint Badge */}
+          <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-slate-950/80 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 z-20">
+            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+            <span>🖱️ Scroll mouse to scrub 4K video</span>
+          </div>
+
+        </div>
+
+        {/* ================= BELOW VIDEO: Content, Features Checklist & CTA ================= */}
+        <div className="space-y-3 pt-2 z-20 bg-slate-950/90 p-4 sm:p-6 rounded-2xl border border-slate-800">
+          
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             
-            {/* Timeline Counter & Audio Mute Button */}
-            <div className="flex items-center justify-between gap-3 bg-slate-950/95 p-3 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-2xl">
-              <div className="text-xs font-mono text-cyan-400 font-bold min-w-[75px]">
-                SCRUB {scrollPercent}%
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/40 text-cyan-300 text-xs font-mono">
+                <span>{currentApp.category}</span>
+                <span>•</span>
+                <span>{currentApp.badge}</span>
               </div>
-              <div className="w-32 sm:w-44 h-2.5 rounded-full bg-slate-800 overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all duration-75 shadow-lg shadow-cyan-500/50"
-                  style={{ width: `${scrollPercent}%` }}
-                ></div>
-              </div>
-              <button 
-                onClick={() => setIsMuted(!isMuted)}
-                className="p-1.5 rounded-xl bg-slate-900 text-slate-300 hover:text-cyan-400 border border-slate-800 transition-colors"
-                title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
-              >
-                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              </button>
+              <h3 className="text-xl sm:text-2xl font-black text-white font-heading">
+                {currentApp.name} — <span className="text-cyan-400 font-medium text-sm sm:text-base">{currentApp.tagline}</span>
+              </h3>
             </div>
 
             <button
               onClick={onOpenConsultation}
-              className="btn-ithrive-pill px-8 py-3.5 text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 shadow-2xl flex-shrink-0"
+              className="btn-ithrive-pill px-8 py-3 text-xs sm:text-sm font-extrabold uppercase tracking-wider flex items-center gap-2 flex-shrink-0"
             >
               <span>Build {currentApp.name}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-slate-800/80">
+            {currentApp.features.map((feat, fIdx) => (
+              <div key={fIdx} className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                <span className="truncate">{feat}</span>
+              </div>
+            ))}
           </div>
 
         </div>
