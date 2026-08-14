@@ -153,17 +153,17 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
     <section 
       ref={sectionRef} 
       id="simulator" 
-      className="relative bg-slate-950 border-t border-b border-slate-800/80 min-h-[350vh] w-full py-16"
+      className="relative bg-slate-950 border-t border-b border-slate-800/80 min-h-[350vh] w-full py-12"
     >
-      {/* PINNED FULLSCREEN CONTAINER */}
-      <div className="sticky top-0 h-screen w-full flex flex-col justify-between py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 overflow-hidden bg-slate-950/95">
+      {/* PINNED FULLSCREEN CONTAINER - 100% FULL-BLEED SCREEN WIDTH (NO LEFT/RIGHT EMPTY MARGINS) */}
+      <div className="sticky top-0 h-screen w-full flex flex-col justify-between py-4 px-0 z-10 overflow-hidden bg-slate-950/95">
         
         {/* ================= ABOVE VIDEO: Section Title & 4 Platform Tabs ================= */}
-        <div className="space-y-3 text-center z-20">
+        <div className="space-y-3 text-center z-20 px-4 sm:px-8">
           
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 border border-cyan-500/40 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-slate-900 border border-cyan-500/40 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
             {isLocked ? <Lock className="w-3.5 h-3.5 text-cyan-400" /> : <Unlock className="w-3.5 h-3.5 text-emerald-400" />}
-            <span>{isLocked ? 'Page Scroll Locked Until Video Completes' : 'Video Complete — Scroll Down For Next Section'}</span>
+            <span>1920x1080 Widescreen 16:9 • {isLocked ? 'Scroll Locked Until Video Completes' : 'Video Complete — Scroll Down For Next Section'}</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black font-heading tracking-tight text-white">
@@ -198,16 +198,14 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
 
         </div>
 
-        {/* ================= CENTER: STANDALONE CLEAN 4K 16:9 VIDEO STAGE WITH 3D GLASS SHADOW ================= */}
+        {/* ================= CENTER: 100% EDGE-TO-EDGE 1920x1080 WIDESCREEN BANNER STAGE (ZERO SIDE MARGINS) ================= */}
         <div 
-          className="relative w-full aspect-video max-h-[52vh] rounded-3xl overflow-hidden glass-panel border-2 border-cyan-500/50 shadow-2xl shadow-cyan-500/20 my-auto group"
+          className="relative w-full aspect-video max-h-[58vh] overflow-hidden border-y-2 border-cyan-500/50 shadow-2xl shadow-cyan-500/20 my-auto bg-black group"
           style={{
-            perspective: '1200px',
-            transform: 'perspective(1200px) rotateX(1deg)',
-            boxShadow: '0 25px 60px -15px rgba(0, 229, 255, 0.25), 0 0 40px rgba(59, 130, 246, 0.2)'
+            boxShadow: '0 25px 60px -15px rgba(0, 229, 255, 0.3), 0 0 50px rgba(59, 130, 246, 0.25)'
           }}
         >
-          {/* Standalone Video Canvas - ZERO TEXT OVERLAID ON TOP OF VIDEO */}
+          {/* Standalone 100% Edge-to-Edge Widescreen Video Banner */}
           <video
             ref={videoRef}
             key={currentApp.video}
@@ -225,9 +223,9 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
           />
 
           {/* Minimal Floating Scrub Progress Counter at Bottom Right Corner */}
-          <div className="absolute bottom-3 right-3 flex items-center gap-3 bg-slate-950/90 px-3 py-1.5 rounded-xl border border-slate-800 backdrop-blur-md text-xs font-mono text-cyan-400 font-bold z-20">
+          <div className="absolute bottom-3 right-6 flex items-center gap-3 bg-slate-950/90 px-3 py-1.5 rounded-xl border border-slate-800 backdrop-blur-md text-xs font-mono text-cyan-400 font-bold z-20">
             <span>SCRUB {scrollPercent}%</span>
-            <div className="w-24 h-2 rounded-full bg-slate-800 overflow-hidden">
+            <div className="w-28 h-2 rounded-full bg-slate-800 overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-75"
                 style={{ width: `${scrollPercent}%` }}
@@ -243,15 +241,15 @@ export default function AppSimulatorSection({ onOpenConsultation }) {
           </div>
 
           {/* Mouse Scroll Hint Badge */}
-          <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-slate-950/80 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 z-20">
+          <div className="absolute top-3 left-6 px-3 py-1 rounded-full bg-slate-950/80 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 z-20">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-            <span>🖱️ Scroll mouse to scrub 4K video</span>
+            <span>🖱️ Scroll mouse to scrub 1920x1080 4K video banner</span>
           </div>
 
         </div>
 
         {/* ================= BELOW VIDEO: Content, Features Checklist & CTA ================= */}
-        <div className="space-y-3 pt-2 z-20 bg-slate-950/90 p-4 sm:p-6 rounded-2xl border border-slate-800">
+        <div className="space-y-3 pt-2 z-20 bg-slate-950/95 p-4 sm:p-6 rounded-none md:rounded-2xl border-t border-slate-800 max-w-7xl mx-auto w-full">
           
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             

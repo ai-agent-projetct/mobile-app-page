@@ -1,13 +1,13 @@
-<!-- Experience Our Interactive UI/UX Mobile Apps (Standalone 4K 16:9 Video Stage with Content Above and Below) -->
-<section id="simulator" class="relative bg-slate-950 border-t border-b border-slate-800/80 min-h-[350vh] w-full py-16">
+<!-- Experience Our Interactive UI/UX Mobile Apps (100% Edge-to-Edge 1920x1080 Widescreen Banner Video) -->
+<section id="simulator" class="relative bg-slate-950 border-t border-b border-slate-800/80 min-h-[350vh] w-full py-12">
     
-    <!-- PINNED FULLSCREEN CONTAINER -->
-    <div class="sticky top-0 h-screen w-full flex flex-col justify-between py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto z-10 overflow-hidden bg-slate-950/95">
+    <!-- PINNED FULLSCREEN CONTAINER - ZERO SIDE MARGINS -->
+    <div class="sticky top-0 h-screen w-full flex flex-col justify-between py-4 px-0 z-10 overflow-hidden bg-slate-950/95">
         
         <!-- ================= ABOVE VIDEO: Section Title & 4 Platform Tabs ================= -->
-        <div class="space-y-3 text-center z-20">
-            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 border border-cyan-500/40 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
-                🔒 Standalone 4K Video Stage
+        <div class="space-y-3 text-center z-20 px-4 sm:px-8">
+            <div class="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-slate-900 border border-cyan-500/40 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
+                🔒 1920x1080 Widescreen 16:9 • Full-Bleed Video Banner
             </div>
 
             <h2 class="text-2xl sm:text-3xl md:text-4xl font-black font-heading tracking-tight text-white">
@@ -31,30 +31,30 @@
             </div>
         </div>
 
-        <!-- ================= CENTER: STANDALONE 4K 16:9 VIDEO STAGE ================= -->
+        <!-- ================= CENTER: 100% EDGE-TO-EDGE 1920x1080 WIDESCREEN BANNER STAGE ================= -->
         <div 
-            class="relative w-full aspect-video max-h-[52vh] rounded-3xl overflow-hidden glass-panel border-2 border-cyan-500/50 shadow-2xl shadow-cyan-500/20 my-auto group"
-            style="perspective: 1200px; transform: perspective(1200px) rotateX(1deg); boxShadow: 0 25px 60px -15px rgba(0, 229, 255, 0.25);"
+            class="relative w-full aspect-video max-h-[58vh] overflow-hidden border-y-2 border-cyan-500/50 shadow-2xl shadow-cyan-500/20 my-auto bg-black group"
+            style="boxShadow: 0 25px 60px -15px rgba(0, 229, 255, 0.3);"
         >
             <video id="php169Video" src="assets/videos/taxi_ai.mp4" muted playsinline preload="auto" class="w-full h-full object-cover"></video>
 
             <!-- Minimal Scrub Progress Counter at Bottom Right -->
-            <div class="absolute bottom-3 right-3 flex items-center gap-3 bg-slate-950/90 px-3 py-1.5 rounded-xl border border-slate-800 backdrop-blur-md text-xs font-mono text-cyan-400 font-bold z-20">
+            <div class="absolute bottom-3 right-6 flex items-center gap-3 bg-slate-950/90 px-3 py-1.5 rounded-xl border border-slate-800 backdrop-blur-md text-xs font-mono text-cyan-400 font-bold z-20">
                 <span id="php169ScrubText">SCRUB 0%</span>
-                <div class="w-24 h-2 rounded-full bg-slate-800 overflow-hidden">
+                <div class="w-28 h-2 rounded-full bg-slate-800 overflow-hidden">
                     <div id="php169ProgressBar" class="h-full bg-gradient-to-r from-cyan-400 to-purple-500 w-0 transition-all duration-75"></div>
                 </div>
             </div>
 
             <!-- Scroll Mouse Hint Badge -->
-            <div class="absolute top-3 left-3 px-3 py-1 rounded-full bg-slate-950/80 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 z-20">
+            <div class="absolute top-3 left-6 px-3 py-1 rounded-full bg-slate-950/80 border border-cyan-500/30 text-cyan-300 text-xs font-semibold flex items-center gap-1.5 z-20">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                <span>🖱️ Scroll mouse to scrub 4K video</span>
+                <span>🖱️ Scroll mouse to scrub 1920x1080 4K video banner</span>
             </div>
         </div>
 
         <!-- ================= BELOW VIDEO: App Info & CTA ================= -->
-        <div class="space-y-3 pt-2 z-20 bg-slate-950/90 p-4 sm:p-6 rounded-2xl border border-slate-800">
+        <div class="space-y-3 pt-2 z-20 bg-slate-950/95 p-4 sm:p-6 rounded-none md:rounded-2xl border-t border-slate-800 max-w-7xl mx-auto w-full">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div class="space-y-1">
                     <span id="php169Category" class="px-3 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/40 text-cyan-300 text-xs font-mono">
